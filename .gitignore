@@ -1,0 +1,8 @@
+*/
+*.sh
+PreliminaryJudge
+!srcs/
+!maps/
+!.git
+
+!.gitignore
