@@ -20,5 +20,6 @@ public:
     void init();
     void addRobot(Robot *rbt);
     void addGood(Good *Good);
+    bool removeGood(Good *good);
 };
 extern Controler ctrls[CTRL_NUM + 2][CTRL_NUM + 2];   //4*4

@@ -25,7 +25,7 @@ int max_val = -1;
 int myignore = 0;
 void Init()
 {
-    //init the map
+    // init the map
     srand(time(0));
     for (int i = 1; i <= n; i++)
     {
@@ -43,14 +43,14 @@ void Init()
         }
     }
     assert(rbt_idx == ROBOT_NUM);
-    //init the berth
+    // init the berth
     for (int i = 0; i < BERTH_NUM; i++)
     {
         int id;
         scanf("%d", &id);
         int x, y, transport_time, loading_speed;
         scanf("%d%d%d%d", &x, &y, &transport_time, &loading_speed);
-        Berths[id].init(x, y, transport_time, loading_speed);
+        Berths[id].init(x, y, transport_time, loading_speed, id);
         LOG("transport_time = %d, loading_speed = %d\n", transport_time, loading_speed);
     }
     scanf("%d", &boat_capacity);
@@ -58,7 +58,7 @@ void Init()
 
     char okk[100];
     scanf("%s", okk);
-    LOG("OKK=%s",okk);
+    LOG("OKK=%s", okk);
     initBoat();
     printf("OK\n");
     fflush(stdout);
@@ -81,15 +81,14 @@ int Input()
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
         min_val = min(min_val, val);
-        max_val = max(max_val,val);
-        if(val < 180)
+        max_val = max(max_val, val);
+        if (val < 180)
         {
             myignore++;
         }
         else
         {
             sum += val;
-
         }
     }
     bool have_good, sts;
@@ -121,17 +120,23 @@ int main()
         {
             printf("move %d %d\n", i, rand() % 4);
             printf("get %d\n", i);
+            printf("pull %d\n", i);
         }
+        for (int i = 0; i < BOAT_NUM; i++)
+        {
+            boats[i].action();
+        }
+
         puts("OK");
         fflush(stdout);
     }
     LOG("max = %d\n", myMax);
     LOG("sum = %d\n", sum);
     LOG("num = %d\n", cnt);
-    LOG("max_val = %d\n",max_val);
+    LOG("max_val = %d\n", max_val);
     LOG("minval = %d\n", min_val);
-    LOG("E(val) = %d\n",sum/(cnt - myignore));
-    LOG("ignore = %d\n",myignore);
-    LOG("rate =%lf\n",(double)myignore/cnt);
+    LOG("E(val) = %d\n", sum / (cnt - myignore));
+    LOG("ignore = %d\n", myignore);
+    LOG("rate =%lf\n", (double)myignore / cnt);
     return 0;
 }

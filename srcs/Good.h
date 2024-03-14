@@ -16,6 +16,8 @@ public:
     {
 
     };
+    inline int getX(){return x;}
+    inline int getY(){return y;}
     // TODO
     Point loc(){return Point(x,y);}
 };
