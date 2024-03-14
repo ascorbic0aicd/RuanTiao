@@ -7,12 +7,22 @@
 
 using namespace std;
 
-const int n = 200;
-const int N = 230;
+const int n=200;
+const int N=230;
+
+
 extern int boat_capacity;
 int money, Time;
 char ch[N][N];
 vector<vector<Cell>> maps(N, vector<Cell>(N));
+
+
+int sum = 0;
+int cnt = 0;
+int myMax = -1;
+int min_val = 114514;
+int max_val = -1;
+int myignore = 0;
 void Init()
 {
     //init the map
@@ -53,12 +63,7 @@ void Init()
     printf("OK\n");
     fflush(stdout);
 }
-int sum = 0;
-int cnt = 0;
-int myMax = -1;
-int min_val = 114514;
-int max_val = -1;
-int myignore = 0;
+
 int Input()
 {
     scanf("%d%d", &Time, &money);

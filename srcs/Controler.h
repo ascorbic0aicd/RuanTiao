@@ -21,4 +21,4 @@ public:
     void addRobot(Robot *rbt);
     void addGood(Good *Good);
 };
-extern Controler ctrls[CTRL_NUM + 2][CTRL_NUM + 2];
+extern Controler ctrls[CTRL_NUM + 2][CTRL_NUM + 2];   //4*4

@@ -17,5 +17,6 @@ public:
 
     };
     // TODO
+    Point loc(){return Point(x,y);}
 };
 void addGood(int val, int life, int x, int y);

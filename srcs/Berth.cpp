@@ -1,4 +1,5 @@
 #include "Berth.h"
+#include "Cell.h"
 Berth Berths[BERTH_NUM + 5];
 // extern int boat_capacity;
 void Berth::init(int x, int y, int transport_time, int loading_speed)

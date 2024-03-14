@@ -1,4 +1,5 @@
 #pragma once
+
 #define BERTH_NUM 10
 class Berth
 {

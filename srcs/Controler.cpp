@@ -5,7 +5,14 @@
 #include <random>
 #define ARG1 15
 #define ARG2 5
+
 Controler ctrls[CTRL_NUM+2][CTRL_NUM + 2];
+
+int Manhadun(int mx, int my, int gx,int gy)
+{
+    return abs(mx - gx) + abs(my - gy);
+}
+
 void Controler::init()
 {
     //TODO
@@ -14,34 +21,24 @@ void Controler:: addGood(Good *good)
 {
     gds.push_back(good);
     Robot *ptr = nullptr;
+    int mindis = 999999;
     for(auto r: rbts)
     {
         if (r->getStatus()==FREE)
         {
-            if (ptr == nullptr)
+            int dis =r->disTO(good->x,good->y);
+            if(dis<mindis)
             {
-                ptr = r;
-            }
-            else
-            {
-                if (r->disTO(good->x,good->y) - r->disTO(good->x, good->y) > ARG1)
-                {
-                    ptr = r;
-                }
-                else if (abs(r->disTO(good->x,good->y) - r->disTO(good->x, good->y)) < ARG2)
-                {
-                    if (random()%2)
-                    {
-                        ptr = r;
-                    }
-                    
-                }
+                mindis=dis;
+                ptr=r;
             }
         }
     }
-    
-    
+    ptr->path = ptr->AStarPath(ptr->loc(),good->loc());
+    ptr->changeStatus(MOVING);
+    ptr->action();
 }
+
 void Controler::addRobot(Robot *rbt)
 {
     rbts.push_back(rbt);
