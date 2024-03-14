@@ -16,6 +16,8 @@ public:
     {
 
     };
+    inline int getX(){return x;}
+    inline int getY(){return y;}
     // TODO
 };
 void addGood(int val, int life, int x, int y);
