@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <functional>
+#include "marcos.h"
 extern const int N;
 extern vector<vector<Cell>> maps;
 int rbt_idx = 0;
@@ -67,61 +68,72 @@ struct PointHash2
 
 list<Point> Robot::AStarPath(Point start, Point goal)
 {
-    priority_queue<PIP, vector<PIP>, Compare> frontier;
-    frontier.push(PIP(start, 0));
+    
+    // LOG("robot astarpath qid=%d\n", id);
+    // priority_queue<PIP, vector<PIP>, Compare> frontier;
+    // frontier.push(PIP(start, 0));
 
-    unordered_map<Point, Point, PointHash1> came_from;
-    unordered_map<Point, int, PointHash2> cost_so_far;
-    came_from[start] = {-1, -1};
-    cost_so_far[start] = 0;
+    // unordered_map<Point, Point, PointHash1> came_from;
+    // unordered_map<Point, int, PointHash2> cost_so_far;
+    // came_from[start] = {-1, -1};
+    // cost_so_far[start] = 0;
 
-    while (!frontier.empty())
-    {
-        Point current = frontier.top().loc;
-        frontier.pop();
+    // // while (!frontier.empty())
+    // // {
+    // //     Point current = frontier.top().loc;
+    // //     frontier.pop();
 
-        if (current == goal)
-            break;
-        Point neighbor[4] = {Point(current.x - 1, current.y), Point(current.x + 1, current.y), Point(current.x, current.y - 1), Point(current.x - 1, current.y + 1)};
-        for (int i = 0; i < 4; i++)
-        {
-            Point next = neighbor[i];
-            int new_cost = cost_so_far[current] + maps[current.x][current.y].cost();
-            if (!cost_so_far.count(next) || new_cost < cost_so_far[next])
-            {
-                cost_so_far[next] = new_cost;
-                int priority = new_cost + heuristic(next, goal);
-                frontier.push(PIP(next, priority));
-                came_from[next] = current;
-            }
-        }
-    }
+    // //     if (current == goal)
+    // //         break;
+    // //     Point neighbor[4] = {Point(current.x - 1, current.y), Point(current.x + 1, current.y), Point(current.x, current.y - 1), Point(current.x - 1, current.y + 1)};
+    // //     for (int i = 0; i < 4; i++)
+    // //     {
+    // //         Point next = neighbor[i];
+    // //         int new_cost = cost_so_far[current] + maps[current.x][current.y].cost();
+    // //         if (!cost_so_far.count(next) || new_cost < cost_so_far[next])
+    // //         {
+    // //             cost_so_far[next] = new_cost;
+    // //             int priority = new_cost + heuristic(next, goal);
+    // //             frontier.push(PIP(next, priority));
+    // //             came_from[next] = current;
+    // //         }
+    // //     }
+    // // }
 
-    std::list<Point> path;
-    Point current = goal;
-    while (current != start)
-    {
-        path.push_front(current);
-        current = came_from[current];
-    }
-    path.push_front(start);
-    return path;
+    // std::list<Point> path;
+    // Point current = goal;
+    // // while (current != start)
+    // // {
+    // //     path.push_front(current);
+    // //     current = came_from[current];
+    // // }
+    // path.push_front(start);
+    // return path;
 }
 
 void Robot::action()
 {
+    LOG("robot act id=%d\n", id);
+    if(path.empty())
+    {
+        return;
+    }
     Point now = path.front();
+    if(now.x!=x || now.y!=y)
+    {
+        LOG("error path:now.x=%d,x=%d,now.y=%d,y=%d\n", now.x,x,now.y,y);
+    }
     path.pop_front();
     if (path.empty())
     {
         if (status == MOVING)
         {
-            printf("get %1", id);
+            printf("get %d\n", id);
             changeStatus(HAVE_GOOD);
         }
         else if (status == HAVE_GOOD)
         {
-            printf("pull %1", id);
+            printf("pull %d\n", id);
             changeStatus(FREE);
         }
     }
@@ -143,17 +155,19 @@ void Robot::action()
     {
         dir = 3;
     }
-    printf("move %1 %2",id,dir);
+    this->x=next.x;
+    this->y=next.y;
+    printf("move %d %d\n",id,dir);
     if (path.size() == 1)
     {
         if (status == MOVING)
         {
-            printf("get %1", id);
+            printf("get %d\n", id);
             changeStatus(HAVE_GOOD);
         }
         else if(status==HAVE_GOOD)
         {
-            printf("pull %1", id);
+            printf("pull %d\n", id);
             changeStatus(FREE);
         }
         path.clear();

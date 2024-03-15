@@ -2,9 +2,8 @@
 #include <vector>
 #include <list>
 #include <iostream>
-#include "Berth.h"
 using namespace std;
-
+#define BERTH_NUM 10
 
 typedef enum CellType
 {

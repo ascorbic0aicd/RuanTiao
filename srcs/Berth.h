@@ -1,6 +1,6 @@
 #pragma once
+#include "Cell.h"
 
-#define BERTH_NUM 10
 
 class Berth
 {
@@ -20,6 +20,9 @@ public:
     void init(int x, int y, int transport_time, int loading_speed,int ID);
     bool operator<(const Berth &) const;
     int transportGood();
+    inline int getX(){return x;}
+    inline int getY(){return y;}
+    Point loc(){return Point(x,y);}
 };
 
 extern Berth Berths[BERTH_NUM + 5];

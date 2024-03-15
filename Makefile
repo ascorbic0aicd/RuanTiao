@@ -1,6 +1,6 @@
 default: all
 CXX = g++  
-CXXFLAGS = -Wall -g  
+CXXFLAGS = -Wall -g 
   
 SRC_DIR = srcs
 BUILD_DIR = build
@@ -26,7 +26,7 @@ clean:
 
 RAND = 1
 run: $(TARGET)
-	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l ERR -s $(RAND)
+	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l NONE -s $(RAND)
 replay:
 	./replayer/CodeCraft_2024_Replay.x86_64
 rmrply:

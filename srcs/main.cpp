@@ -4,7 +4,7 @@
 #include "Cell.h"
 #include "marcos.h"
 #include "Berth.h"
-
+#include "Controler.h"
 using namespace std;
 
 const int n=200;
@@ -38,7 +38,8 @@ void Init()
             maps[i][j].init((CellType)ch[i][j]);
             if ((CellType)ch[i][j] == ROBOT)
             {
-                robots[rbt_idx++] = new Robot(i, j);
+                robots[rbt_idx] = new Robot(rbt_idx, i, j);
+                rbt_idx++;
             }
         }
     }
@@ -78,8 +79,12 @@ int Input()
 
     for (int i = 1; i <= num; i++)
     {
+        
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
+        //Good* good=new Good(x,y, val, Time);
+        //ctrls[0]->addGood(good);
+
         min_val = min(min_val, val);
         max_val = max(max_val, val);
         if (val < 180)
@@ -116,12 +121,13 @@ int main()
     for (int zhen = 1; zhen <= 15000; zhen++)
     {
         int id = Input();
-        for (int i = 0; i < ROBOT_NUM; i++)
-        {
-            printf("move %d %d\n", i, rand() % 4);
-            printf("get %d\n", i);
-            printf("pull %d\n", i);
-        }
+        ctrls[1][1].Manager();
+        // for (int i = 0; i < ROBOT_NUM; i++)
+        // {
+        //     printf("move %d %d\n", i, rand() % 4);
+        //     printf("get %d\n", i);
+        //     printf("pull %d\n", i);
+        // }
         for (int i = 0; i < BOAT_NUM; i++)
         {
             boats[i].action();

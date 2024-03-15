@@ -1,5 +1,6 @@
 #pragma once
 #define DISAPPER_TIME 1000
+#include "Cell.h"
 class Controler;
 class Good
 {
@@ -12,10 +13,7 @@ private:
     int y;
     // TODO
 public:
-    Good(int val, int life) : val(val), life(life + DISAPPER_TIME)
-    {
-
-    };
+    Good(int x1, int y1, int val, int life) : x(x1), y(y1), val(val), life(life + DISAPPER_TIME){}
     inline int getX(){return x;}
     inline int getY(){return y;}
     // TODO

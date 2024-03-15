@@ -7,7 +7,7 @@
 #include <random>
 #define ARG1 15
 #define ARG2 5
-
+ 
 Controler ctrls[CTRL_NUM+2][CTRL_NUM + 2];
 int Manhadun(int mx, int my, int gx,int gy)
 {
@@ -20,33 +20,64 @@ void Controler::init()
 void Controler:: addGood(Good *good)
 {
     gds.push_back(good);
-    Robot *ptr = nullptr;
-    int mindis = 999999;
-    for(auto r: rbts)
+}
+list<Point> Path(){
+
+}
+void Controler::Manager()
+{
+    //LOG("manager\n");
+    for(auto r:rbts)
     {
+        LOG("manager robot id=%d\n", r->ID());
         if (r->getStatus()==FREE)
         {
-            int dis =r->disTO(good->x,good->y);
-            if(dis<mindis)
+            int mindis = 999999;
+            Good* gtr = nullptr;
+            for(auto g:gds)
             {
-                mindis=dis;
-                ptr=r;
+                int dis =r->disTO(g->getX(),g->getY());
+                if(dis<mindis)
+                {
+                    mindis=dis;
+                    gtr=g;
+                }
             }
+
+            //r->path = r->AStarPath(r->loc(),gtr->loc());
+            r->path=Path();
+            r->changeStatus(MOVING);
         }
+        else if (r->getStatus()==HAVE_GOOD && r->path.empty())
+        {
+            int mindis = 999999;
+            Berth btr = Berths[0];
+            for(int j=0;j<BERTH_NUM;j++)
+            {
+                Berth b=Berths[j];
+                int dis =r->disTO(b.getX(),b.getY());
+                if(dis<mindis)
+                {
+                    mindis=dis;
+                    btr=b;
+                }
+            }
+            //r->path = r->AStarPath(r->loc(),btr.loc());
+            r->path=Path();
+            r->changeStatus(HAVE_GOOD);
+        }
+        r->action();
     }
-    ptr->path = ptr->AStarPath(ptr->loc(),good->loc());
-    ptr->changeStatus(MOVING);
-    ptr->action();
 }
 
 void Controler::addRobot(Robot *rbt)
 {
+    //LOG("Controler::addRobot\n");
     rbts.push_back(rbt);
     if (rbt->getStatus() == FREE )
     {
         free_rbts_nums++;
     }
-    
 }
 
 
