@@ -2,12 +2,12 @@
 #include "algorithm"
 #include <cassert>
 using namespace std;
-Berth Berths[BERTH_NUM + 5];
+vector<Berth>Berths(BERTH_NUM);
 // extern int boat_capacity;
 void Berth::init(int x, int y, int transport_time, int loading_speed, int ID)
 {
-    this->x = x;
-    this->y = y;
+    LOG("init berth at(%d,%d)\n",x,y);
+    loc = Location(x,y);
     this->transport_time = transport_time;
     this->loading_speed = loading_speed;
     this->capacity = 0;

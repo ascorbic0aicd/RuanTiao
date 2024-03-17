@@ -7,5 +7,8 @@ private:
     CellType type;
 //TODO
 public:
+    Cell():type(BARRIER){};
+    inline CellType getType(){return type;}
     void init(CellType type);
 };
+extern vector<vector<Cell>> maps;

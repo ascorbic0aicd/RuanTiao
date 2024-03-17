@@ -4,15 +4,14 @@
 #include "Cell.h"
 #include "marcos.h"
 #include "Berth.h"
-
+#include "Frame.h"
 using namespace std;
 
-const int n = 200;
-const int N = 230;
+#define N 230
+#define n 200
 extern int boat_capacity;
 int money, Time;
-char ch[N][N];
-vector<vector<Cell>> maps(N, vector<Cell>(N));
+char ch[230][230];
 void Init()
 {
     // init the map
@@ -28,8 +27,18 @@ void Init()
             maps[i][j].init((CellType)ch[i][j]);
             if ((CellType)ch[i][j] == ROBOT)
             {
-                robots[rbt_idx++] = new Robot(i, j);
+                robots[rbt_idx] = new Robot(rbt_idx, i, j);
+                LOGLOC("robots[%d] init done \n", rbt_idx);
+                rbt_idx++;
             }
+        }
+    }
+    for (int i = 0; i < ROBOT_NUM; ++i)
+    {
+        if (robots[i] == nullptr)
+        {
+            LOGERR("WHY robots[%d] is nullptr\n", i);
+            assert(0);
         }
     }
     assert(rbt_idx == ROBOT_NUM);
@@ -40,59 +49,56 @@ void Init()
         scanf("%d", &id);
         int x, y, transport_time, loading_speed;
         scanf("%d%d%d%d", &x, &y, &transport_time, &loading_speed);
-        Berths[id].init(x, y, transport_time, loading_speed, id);
+        
+        Berths[id].init(x+1, y+1, transport_time, loading_speed, id);
         LOG("transport_time = %d, loading_speed = %d\n", transport_time, loading_speed);
     }
     scanf("%d", &boat_capacity);
     LOG("capacity = %d\n", boat_capacity);
 
+    // init the ctrl
+
+    for (int i = 0; i < CTRL_NUM; i++)
+    {
+        for (int j = 0; j < CTRL_NUM; j++)
+        {
+            ctrls[i][j].init(i, j);
+        }
+    }
+
     char okk[100];
     scanf("%s", okk);
-    LOG("OKK=%s", okk);
     initBoat();
     printf("OK\n");
     fflush(stdout);
 }
-int sum = 0;
-int cnt = 0;
-int myMax = -1;
-int min_val = 114514;
-int max_val = -1;
-int myignore = 0;
+
 int Input()
 {
     scanf("%d%d", &Time, &money);
     int num;
     scanf("%d", &num);
-    if (num != 0)
-    {
-        cnt += num;
-        if (num > myMax)
-            myMax = num;
-    }
 
     for (int i = 1; i <= num; i++)
     {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-        min_val = min(min_val, val);
-        max_val = max(max_val, val);
-        if (val < 180)
+        if (val > 150)
         {
-            myignore++;
-        }
-        else
-        {
-            sum += val;
+            LOGLOC("add good(%d,%d)val = %d start!\n", x, y, val);
+            addGood(val, Time, x + 1, y + 1);
+            LOGLOC("add good(%d,%d)val = %d end!\n", x, y, val);
         }
     }
+    LOGLOC("input the good done\n");
     bool have_good, sts;
     int x, y;
 
     for (int i = 0; i < ROBOT_NUM; i++)
     {
         scanf("%d%d%d%d", &have_good, &x, &y, &sts);
-        robots[i]->checkStatus(x, y, have_good, sts);
+        // LOG("checkStatus\n");
+        robots[i]->checkStatus(x + 1, y + 1, have_good, sts);
     }
     int status, pos;
     for (int i = 0; i < BOAT_NUM; ++i)
@@ -110,10 +116,18 @@ int main()
     Init();
     for (int zhen = 1; zhen <= 15000; zhen++)
     {
-        int id = Input();
+        // list<Location>test;
+        LOG("\nFrame =%d\n",zhen);
+        //  Location start(66, 127);
+        //  Location target(5, 135);
+        //  start.findPath(start, target, test);
+        //  assert(0);
+        Input();
+        // printf("move %d %d\n",4,3);
         for (int i = 0; i < ROBOT_NUM; i++)
         {
-            printf("move %d %d\n", i, rand() % 4);
+
+            // printf("move %d %d\n", i, rand() % 4);
             printf("get %d\n", i);
             printf("pull %d\n", i);
         }
@@ -121,17 +135,17 @@ int main()
         {
             boats[i].action();
         }
+        LOGLOC("robots action start\n");
+        for (int i = 0; i < ROBOT_NUM; i++)
+        {
+            robots[i]->action();
+        }
+        LOGLOC("robots action end\n");
 
+        frames[Time % MAGIC_NUMBER].work();
         puts("OK");
         fflush(stdout);
     }
-    LOG("max = %d\n", myMax);
-    LOG("sum = %d\n", sum);
-    LOG("num = %d\n", cnt);
-    LOG("max_val = %d\n", max_val);
-    LOG("minval = %d\n", min_val);
-    LOG("E(val) = %d\n", sum / (cnt - myignore));
-    LOG("ignore = %d\n", myignore);
-    LOG("rate =%lf\n", (double)myignore / cnt);
+
     return 0;
 }

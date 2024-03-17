@@ -1,25 +1,35 @@
 #pragma once
-typedef enum direction{RIGHT,LEFT,UP,DOWN} direction;
-typedef enum ROBOT_STATUS{BROKEN,HAVE_GOOD,FREE,MOVING} ROBOT_STATUS;
+#include "Location.h"
+#include <vector>
+using namespace std;
+
 #define ROBOT_NUM 10
 extern int rbt_idx;
 #include "Controler.h"
-#include "cmath"
+#include <cmath>
+#include <queue>
+#include "marcos.h"
 class Robot
 {
-    int x, y;
+
+    Location loc;
     ROBOT_STATUS status;
     direction step;
+    Location target;
+    PATH<PATH_TYPE> paths;
+
 public:
-    Robot() {}
-    
-    Robot(int startX, int startY):x(startX),y(startY),status(FREE), step(UP)
+    const int id;
+    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), step(UP), target(-1, -1)
     {
-        ctrls[x/DIV + 1][y/DIV + 1].addRobot(this);
+        ctrls[(x - 1) / DIV][(y - 1) / DIV].addRobot(this);
     }
-    inline int disTO(int x,int y){return abs(this->x - x) + abs(this->y - y);}
-    inline ROBOT_STATUS getStatus(){return status;};
-    void checkStatus(int x,int y,bool have_good, bool can_move);
+    inline Location getLocation() { return loc; }
+    inline ROBOT_STATUS getStatus() { return status; };
+    void checkStatus(int x, int y, bool have_good, bool can_move);
+    void setTarget(Location &target);
+    void action();
+    bool to(Location &target);
 };
 
-extern Robot *robots[ROBOT_NUM + 5];
+extern vector<Robot *> robots;

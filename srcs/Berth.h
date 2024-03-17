@@ -1,11 +1,12 @@
 #pragma once
 #define BERTH_NUM 10
-
+#include<vector>
+#include "Location.h"
+using namespace std;
 class Berth
 {
 private:
-    int x;
-    int y;
+    Location loc;
     int transport_time;
     int loading_speed;
     int capacity;
@@ -13,7 +14,8 @@ private:
     int ID;
     int evalWeight() const;
 public:
-    Berth() {}
+    Berth():loc(-1,-1) {}
+    inline Location getLoc()const {return loc;}
     inline int getID()const{return ID;}
     inline int getTransport_time()const {return transport_time;}
     void init(int x, int y, int transport_time, int loading_speed,int ID);
@@ -21,4 +23,4 @@ public:
     int transportGood();
 };
 
-extern Berth Berths[BERTH_NUM + 5];
+extern vector<Berth>Berths;

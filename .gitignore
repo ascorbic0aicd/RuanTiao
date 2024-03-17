@@ -4,5 +4,5 @@ PreliminaryJudge
 !srcs/
 !maps/
 !.git
-
+!submit.sh
 !.gitignore

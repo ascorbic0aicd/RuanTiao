@@ -26,9 +26,13 @@ clean:
 
 RAND = 1
 run: $(TARGET)
-	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l ERR -s $(RAND)
+	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l INFO -s $(RAND) -f 0
 replay:
 	./replayer/CodeCraft_2024_Replay.x86_64
 rmrply:
 	rm -f replay/*
-.PHONY: all clean help replay rmrply
+submit:$(TARGET)
+	sh submit.sh
+count:
+	egrep -o '[0-9]+ ms' log |sort |uniq -c
+.PHONY: all clean help replay rmrply submit count
