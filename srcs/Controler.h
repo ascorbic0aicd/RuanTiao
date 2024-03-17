@@ -1,5 +1,5 @@
 #pragma once
-#define CTRL_NUM 1
+#define CTRL_NUM 2
 #define DIV (200 / CTRL_NUM)
 #include <list>
 #include "Good.h"
@@ -10,16 +10,21 @@ using namespace std;
 class Controler
 {
 private:
+    int id;
     list<Good *> gds;
     list<Robot *> rbts;
-    //list<Berth *> brhs;
+    list<Berth *> brhl;
+    vector<Berth > brhs;
+
     int boat_num = 0;
     int free_rbts_nums = 0;
+    int berth_num=0;
 
 public:
-    void init();
+    void init(int i);
     void addRobot(Robot *rbt);
     void addGood(Good *Good);
+    void addBerth(Berth *berth);
     void Manager();
     bool removeGood(Good *good);
 };

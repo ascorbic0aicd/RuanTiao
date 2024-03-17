@@ -34,16 +34,25 @@ struct Point
     {
         return x != other.x || y != other.y;
     }
+    Point& operator=(const Point &other) {
+        if (this != &other) {
+            x = other.x;
+            y = other.y;
+        }
+        return *this;
+    }
 };
 
 class Cell
 {
 private:
     CellType type;
-    list<Point> toBerth[BERTH_NUM];
+    
     // TODO
 public:
-    Cell():type(PLACE){}
+    list<Point> toBerth[BERTH_NUM];
+    Cell():type(SEA){}
     void init(CellType type);
     int cost() const;
+    CellType Type(){return type;}
 };

@@ -12,7 +12,7 @@ int Cell::cost() const
     case PLACE: 
         cost = 1;break;
     case BARRIER:
-        cost = 2;break;
+        cost = Inf;break;
     case SEA:
         cost = Inf;break;
     default:

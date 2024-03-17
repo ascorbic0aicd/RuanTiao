@@ -2,6 +2,7 @@
 #include "Cell.h"
 #include "algorithm"
 #include <cassert>
+#include "Controler.h"
 using namespace std;
 Berth Berths[BERTH_NUM + 5];
 // extern int boat_capacity;
@@ -14,6 +15,8 @@ void Berth::init(int x, int y, int transport_time, int loading_speed, int ID)
     this->capacity = 0;
     have_boat = 0;
     this->ID = ID;
+    ctrls[x / DIV + 1][y / DIV + 1].addBerth(this);
+    
 }
 int Berth::evalWeight() const
 {

@@ -26,7 +26,7 @@ clean:
 
 RAND = 1
 run: $(TARGET)
-	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l NONE -s $(RAND)
+	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l INFO -s $(RAND) -f 0
 replay:
 	./replayer/CodeCraft_2024_Replay.x86_64
 rmrply:

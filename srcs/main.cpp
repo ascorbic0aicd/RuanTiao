@@ -5,17 +5,16 @@
 #include "marcos.h"
 #include "Berth.h"
 #include "Controler.h"
+#include "Frame.h"
 using namespace std;
 
-const int n=200;
-const int N=230;
-
+const int n = 200;
+const int N = 230;
 
 extern int boat_capacity;
 int money, Time;
 char ch[N][N];
 vector<vector<Cell>> maps(N, vector<Cell>(N));
-
 
 int sum = 0;
 int cnt = 0;
@@ -51,7 +50,7 @@ void Init()
         scanf("%d", &id);
         int x, y, transport_time, loading_speed;
         scanf("%d%d%d%d", &x, &y, &transport_time, &loading_speed);
-        Berths[id].init(x, y, transport_time, loading_speed, id);
+        Berths[id].init(x + 1, y + 1, transport_time, loading_speed, id);
         LOG("transport_time = %d, loading_speed = %d\n", transport_time, loading_speed);
     }
     scanf("%d", &boat_capacity);
@@ -63,6 +62,15 @@ void Init()
     initBoat();
     printf("OK\n");
     fflush(stdout);
+    int k = 1;
+    for (int i = 1; i <= CTRL_NUM; i++)
+    {
+        for (int j = 1; j <= CTRL_NUM; j++)
+        {
+            ctrls[i][j].init(k);
+            k++;
+        }
+    }
 }
 
 int Input()
@@ -79,11 +87,11 @@ int Input()
 
     for (int i = 1; i <= num; i++)
     {
-        
+
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-        //Good* good=new Good(x,y, val, Time);
-        //ctrls[0]->addGood(good);
+        // Good* good=new Good(x,y, val, Time);
+        // ctrls[0]->addGood(good);
 
         min_val = min(min_val, val);
         max_val = max(max_val, val);
@@ -94,6 +102,7 @@ int Input()
         else
         {
             sum += val;
+            addGood(val, Time, x + 1, y + 1);
         }
     }
     bool have_good, sts;
@@ -102,7 +111,7 @@ int Input()
     for (int i = 0; i < ROBOT_NUM; i++)
     {
         scanf("%d%d%d%d", &have_good, &x, &y, &sts);
-        robots[i]->checkStatus(x, y, have_good, sts);
+        robots[i]->checkStatus(x + 1, y + 1, have_good, sts);
     }
     int status, pos;
     for (int i = 0; i < BOAT_NUM; ++i)
@@ -121,7 +130,14 @@ int main()
     for (int zhen = 1; zhen <= 15000; zhen++)
     {
         int id = Input();
-        ctrls[1][1].Manager();
+        for (int i = 1; i <= CTRL_NUM; i++)
+        {
+            for (int j = 1; j <= CTRL_NUM; j++)
+            {
+                ctrls[i][j].Manager();
+            }
+        }
+        LOG("\nframe = %d\n\n", zhen);
         // for (int i = 0; i < ROBOT_NUM; i++)
         // {
         //     printf("move %d %d\n", i, rand() % 4);
@@ -132,7 +148,7 @@ int main()
         {
             boats[i].action();
         }
-
+        //frames[Time%MAGIC_NUMBER].work();
         puts("OK");
         fflush(stdout);
     }

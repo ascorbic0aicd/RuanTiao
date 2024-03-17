@@ -13,6 +13,7 @@ private:
     int have_boat;
     int ID;
     int evalWeight() const;
+    int ctrl_id;
 public:
     Berth() {}
     inline int getID()const{return ID;}
