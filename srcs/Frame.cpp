@@ -14,8 +14,9 @@ void Frame::work()
     // remove the good
     for (auto it = gds.begin(); it != gds.end();)
     {
-
-        bool success_ = ctrls[((*it)->getX()-1) / DIV][((*it)->getY() -1)/ DIV].removeGood((*it));
+        Location loc = (*it)->getLocation();
+        Location ctrl_id = findCTRL(loc);
+        bool success_ = ctrls[ctrl_id.x][ctrl_id.y].removeGood((*it));
         if (!success_)
         {
             LOG("[ERR]! can'remove the good in (%d,%d) !\n", (*it)->getX(), (*it)->getY());
@@ -28,4 +29,16 @@ void Frame::work()
 
     // TODO
     // Do more operations
+}
+bool Frame::removeGood(Location &loc)
+{
+    for (auto gd = gds.begin(); gd != gds.end(); gd++)
+    {
+        if ((*gd)->getLocation() == loc)
+        {
+            gds.erase(gd);
+            return true;
+        }
+    }
+    return false;
 }

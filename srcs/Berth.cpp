@@ -32,3 +32,8 @@ int Berth::transportGood()
     assert(capacity >= 0);
     return ret;
 }
+
+void Berth::pullGood()
+{
+    capacity++;
+}

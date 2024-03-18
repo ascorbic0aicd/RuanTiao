@@ -6,7 +6,7 @@
 #include <cassert>
 #include <map>
 #include <list>
-
+extern int Time;
 extern char ch[230][230];
 #define TOO_MANY 114514
 struct Waypoint
@@ -34,6 +34,11 @@ struct Waypoint
     bool operator<(const Waypoint &other) const
     {
         // LOG("cmp cost(%d) + guess(%d) <cmp cost(%d) + guess(%d) = ",cost,guess,other.cost,other.guess);
+        if (cost + guess == other.cost + other.guess)
+        {
+            return other.cost < cost;
+        }
+
         return cost + guess < other.cost + other.guess;
     }
     bool operator==(const Waypoint &other) const
@@ -82,10 +87,11 @@ void clearWaypoint(priority_queue<Waypoint *, vector<Waypoint *>, cmp> &q, list<
 }
 bool Location::findPath(const Location &start, const Location &target, PATH<PATH_TYPE> &res)
 {
-    LOGERR("now ind the way from (%d,%d) to (%d,%d)\n", start.x, start.y, target.x, target.y);
+    LOG("now ind the way from (%d,%d) to (%d,%d)\n", start.x, start.y, target.x, target.y);
     priority_queue<Waypoint *, vector<Waypoint *>, cmp> q;
     Waypoint *start_waypoint = new Waypoint(start, 0, 0);
     q.push(start_waypoint);
+    maps[start.x][start.y].arrive_times.insert({Time, 514});
     list<Waypoint *> close_list;
     bool find_way = false;
     Waypoint *target_waypoint = nullptr;
@@ -95,7 +101,7 @@ bool Location::findPath(const Location &start, const Location &target, PATH<PATH
     while (!q.empty() && !find_way)
     {
         Waypoint *temp = q.top();
-        // LOG("top = %d at (%d,%d)\n",temp->cost+temp->guess,temp->loc.x,temp->loc.y);
+        LOGLOC("top = %d at (%d,%d)\n", temp->cost + temp->guess, temp->loc.x, temp->loc.y);
         q.pop();
         if (temp->cost >= TOO_MANY)
         {
@@ -117,11 +123,25 @@ bool Location::findPath(const Location &start, const Location &target, PATH<PATH
                 maps[neighbours[i].x][neighbours[i].y].getType() != SEA &&
                 ch[neighbours[i].x][neighbours[i].y])
             {
+                if (maps[neighbours[i].x][neighbours[i].y].arrive_times.find(Time + temp->cost + 1) != maps[neighbours[i].x][neighbours[i].y].arrive_times.end())
+                {
+                    ch[temp->loc.x][temp->loc.y] = true;
+                    continue;
+                }
+                else if (maps[neighbours[i].x][neighbours[i].y].arrive_times.find(Time + temp->cost) != maps[neighbours[i].x][neighbours[i].y].arrive_times.end() &&
+                         maps[temp->loc.x][temp->loc.y].arrive_times.find(Time + temp->cost + 1) != maps[temp->loc.x][temp->loc.y].arrive_times.end())
+                {
+                    ch[temp->loc.x][temp->loc.y] = true;
+                    continue;
+                }
+                // DEBUG
+
                 int cost = temp->cost + 1;
                 // This can be optimized.
                 int guess = target.disTO(neighbours[i]);
                 Waypoint *next = new Waypoint(neighbours[i], cost, guess, temp);
-                //LOG("add the point(%d,%d) cost =%d,guess = %d, total = %d,from (%d,%d)\n",neighbours[i].x,neighbours[i].y,next->cost,next->guess,next->cost +next->guess, next->parent->loc.x,next->parent->loc.y);
+                most_cost = max(most_cost,next->cost+next->guess);
+                // LOG("add the point(%d,%d) cost =%d,guess = %d, total = %d,from (%d,%d)\n",neighbours[i].x,neighbours[i].y,next->cost,next->guess,next->cost +next->guess, next->parent->loc.x,next->parent->loc.y);
                 q.push(next);
                 if (neighbours[i] == target)
                 {
@@ -140,16 +160,20 @@ bool Location::findPath(const Location &start, const Location &target, PATH<PATH
         int cnt = 0;
         while (temp != start_waypoint && cnt < target_waypoint->cost)
         {
-            assert(temp!=nullptr);
-            assert(maps[temp->loc.x][temp->loc.y].getType()!=BARRIER &&maps[temp->loc.x][temp->loc.y].getType()!=SEA);
+            assert(temp != nullptr);
+            assert(maps[temp->loc.x][temp->loc.y].getType() != BARRIER && maps[temp->loc.x][temp->loc.y].getType() != SEA);
             res.push_front(temp->loc);
+            maps[temp->loc.x][temp->loc.y].arrive_times.insert({Time + temp->cost, 114});
+            for (auto it : maps[temp->loc.x][temp->loc.y].arrive_times)
+            {
+                LOGLOC("will arrive at Frame %d to (%d,%d)\n", it.first, temp->loc.x, temp->loc.y);
+            }
             temp = temp->parent;
-
             cnt++;
         }
-        for(auto i:res)
+        for (auto i : res)
         {
-            LOG("(%d,%d)\n",i.x,i.y);
+            LOGLOC("(%d,%d)\n", i.x, i.y);
         }
         if (cnt != target_waypoint->cost)
         {
@@ -159,8 +183,8 @@ bool Location::findPath(const Location &start, const Location &target, PATH<PATH
     }
     else
     {
-        LOGERR("We can't find the way:( cnt %d\n", most_cost);
-        LOGERR("%c",maps[target.x][target.y].getType());
+        LOGERR("We can't find the way from (%d,%d) to (%d,%d):( cnt %d\n",start.x,start.y,target.x,target.y,most_cost);
+        LOGERR("%c", maps[target.x][target.y].getType());
     }
     clearWaypoint(q, close_list);
 

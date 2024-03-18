@@ -13,22 +13,34 @@ Boat boats[BOAT_NUM + 5];
 void Boat::check(int _pos, BoatState st)
 {
     // TODO
+    char s[][100] = {"TRANSMIT","IDIE","WAIT","READY"};
+    LOG("boat[%d] status is %s at pos %d at frame %d\n",ID, s[st],_pos,Time);
+    //assert(st!=WAIT);
+    if (!(status==READY||status==st||Time==1||Time==arrive_time))
+    {
+        LOGERR("status = %d\n",st);
+        
+        LOGERR("boat[%d] status need be %s but fact is %s at frame %d\n",ID, s[status],s[st],Time);
+    }
+    
+    assert(status== READY||status == st||Time==1||Time==arrive_time);
+
 }
 void assignBoat()
 {
     // This is just  a stupid strategy :(
-    vector<Berth> bths(BERTH_NUM);
-    for (int i = 0; i < BERTH_NUM; i++)
+    vector<Berth> fun = Berths;
+    for (int i = 0; i < 5; i++)
     {
-        bths[i] = Berths[i];
+        int cnt = rand() % (10 - i);
+        assert(cnt < fun.size());
+        fun.erase(fun.begin() + cnt);
     }
-    sort(bths.begin(), bths.end());
-    boats[0].berth_ID = bths[0].getID();
-    boats[0].moveTo(boats[0].berth_ID);
-    for (int i = 1; i < BOAT_NUM; i++)
+    for (int i = 0; i < BOAT_NUM; i++)
     {
-        boats[i].berth_ID = bths[i].getID();
-        boats[i].moveTo(boats[i].berth_ID);
+        boats[i].berth_ID = fun[i].getID();
+        boats[i].status = READY;
+        boats[i].target = fun[i].getID();
     }
 }
 
@@ -41,70 +53,81 @@ void initBoat()
     }
     assignBoat();
 }
-void Boat::moveTo(int ID)
+void Boat::arrive()
 {
-    target = ID;
-    status = READY;
-    arrive_time = Time + (ID == -1 ? 500 : Berths[ID].getTransport_time());
+    assert(status == TRANSMIT);
+    assert(Time == arrive_time);
+    LOG("ship[%d] arrive to %d at %d\n", ID,target, Time);
+    if (target == -1)
+    {
+        capacity = 0;
+        // TODO
+        target = berth_ID;
+        status = READY;
+        move();
+    }
+    else
+    {
+        assert(target < BERTH_NUM && target >= 0);
+        status = IDIE;
+    }
 }
+
 void Boat::move()
 {
-    // TODO
-
-    moveTo(berth_ID);
+    assert(status == READY);
+    if (target == -1)
+    {
+        
+        printf("go %d\n", ID);
+        //assert(0);
+        LOG("go %d at frame %d\n", ID, Time);
+        arrive_time = Time + Berths[berth_ID].getTransport_time();
+        LOG("Time = %d ,transportTime = %d\n",Time,Berths[berth_ID].getTransport_time());
+        LOG("%d will arrive at %d\n",ID,arrive_time);
+    }
+    else
+    {
+        assert(target < BERTH_NUM && target >= 0);
+        printf("ship %d %d\n", ID, target);
+        Berths[target].have_boat = true;
+        LOG("ship %d %d at frame %d\n", ID, target, Time);
+        arrive_time = Time + Berths[target].getTransport_time();
+    }
+    status = TRANSMIT;
 }
 void Boat::action()
 {
-    int num = 0;
-    if (Time == arrive_time)
-    {
-        assert(status == TRANSMIT);
-        pos = target;
-        if (target == -1)
-        {
-            move();
-            assert(status == READY);
-        }
-        else
-        {
-            status = IDIE;
-        }
-    }
+    int num = -1;
     switch (status)
     {
-    case TRANSMIT:
-        break;
     case WAIT:
-        // TODO
-        LOG("I AM WATING\n");
-        break;
+        LOGERR("%d IS WAITING ? at frame %d\n", ID, Time);
+        assert(0);
+        return;
     case READY:
-        if (target != -1)
+        move();
+        return;
+    case TRANSMIT:
+        if (Time == arrive_time)
         {
-            printf("ship %d %d\n", ID, target);
-            LOG("ship %d %d\n", ID, target);
+            arrive();
         }
-        else
-        {
-            printf("go %d\n",ID);
-        }
-        status = TRANSMIT;
-        break;
+        return;
     case IDIE:
-        num = Berths[ID].transportGood();
+        num = Berths[berth_ID].transportGood();
         capacity += num;
-
-        if (num + capacity > boat_capacity || Time + Berths[berth_ID].getTransport_time() >= 14000)
+        if (capacity + num > boat_capacity || Time + Berths[berth_ID].transport_time > 14999)
         {
-            // This is not good :(
-            status = TRANSMIT;
-            printf("go %d\n",ID);
+            assert(Time!=10452);
+            target = -1;
+            status = READY;
+            move();
         }
-        break;
+        return;
 
     default:
-        LOG("THE BOAT[%d] STATE IS WRONG!\n", ID);
         assert(0);
-        break;
+        return;
     }
 }

@@ -25,14 +25,17 @@ clean:
 	rm -f $(BUILD_DIR)/*  
 
 RAND = 1
+debug:$(TARGET)
+	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l NONE -s $(RAND) -f 0 
 run: $(TARGET)
-	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l INFO -s $(RAND) -f 0
+	echo 'map = $(IDX) seed =$(RAND)' >>logs/info.log
+	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l NONE -s $(RAND) -f 0
 replay:
 	./replayer/CodeCraft_2024_Replay.x86_64
 rmrply:
 	rm -f replay/*
 submit:$(TARGET)
 	sh submit.sh
-count:
-	egrep -o '[0-9]+ ms' log |sort |uniq -c
-.PHONY: all clean help replay rmrply submit count
+count:$(TARGET)
+	egrep -o '[0-9]+ ms' logs/temp.log |sort |uniq -c
+.PHONY: all clean help replay rmrply submit count debug

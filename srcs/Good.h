@@ -15,8 +15,10 @@ private:
 public:
     Good(int x,int y,int val, int life) : val(val), life(life + DISAPPER_TIME),loc(x,y)
     {
-        frames[life%MAGIC_NUMBER].addGood(this);
+        frames[this->life%MAGIC_NUMBER].addGood(this);
+        //LOG("good(%d,%d) will die at frame %d")
     };
+    int disTo(const Location &target);
     inline Location getLocation(){return loc;}
     inline int getX(){return loc.x;}
     inline int getY(){return loc.y;}
