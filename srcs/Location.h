@@ -23,6 +23,11 @@ struct Location
         //char s[][1000] = {"RIGHT", "LEFT",  "UP","DOWN"};
 
         direction ret;
+        if (other==*this)
+        {
+            return STAY;
+        }
+        
         LOG("(%d,%d) to (%d,%d)\n",x,y,other.x,other.y);
         if (other.x == x)
         {
@@ -53,7 +58,7 @@ struct Location
     Location inline getRight(){return Location(x,y+1);}
     Location inline getUp(){return Location(x-1,y);}
     Location inline getDown(){return Location(x+1,y);}
-    bool findPath(const Location &start, const Location &target, PATH<PATH_TYPE> &res);
+    bool findPath(const Location &start, const Location &target, PATH<PATH_TYPE> &res,bool to_berth);
     bool operator==(const Location &other) const;
     bool operator!=(const Location &other) const;
 };

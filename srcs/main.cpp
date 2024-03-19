@@ -15,7 +15,7 @@ char ch[230][230];
 void Init()
 {
     // init the map
-    srand(time(0));
+   // srand(time(0));
     // init the ctrl
 
     for (int i = 0; i < CTRL_NUM; i++)

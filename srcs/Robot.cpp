@@ -24,8 +24,9 @@ void Robot::checkStatus(int x, int y, bool have_good, bool can_move)
 bool Robot::to(const Location &target, bool to_berth)
 {
     assert(paths.empty());
-    LOGLOC("Begin find the path from (%d,%d) to (%d,%d)\n",loc.x,loc.y,target.x,target.y);
-    bool succ = loc.findPath(loc, target, paths);
+    LOGLOC("rbt[%d] begin find the path from (%d,%d) to (%d,%d) \n", id, loc.x, loc.y, target.x, target.y);
+    LOGLOC("to berth is %d\n", to_berth);
+    bool succ = loc.findPath(loc, target, paths,to_berth);
     assert(succ);
     status = to_berth ? HAVE_GOOD : MOVING;
     if (to_berth)
@@ -73,7 +74,13 @@ bool Robot::action()
         {
             assert(!paths.empty());
             assert(id >= 0 && id < BERTH_NUM);
-            printf("move %d %d\n", id, loc.directonTo(paths.front()));
+            direction dir = loc.directonTo(paths.front());
+            if (dir != STAY)
+            {
+
+                printf("move %d %d\n", id, dir);
+            }
+
             Location ctrl_id = findCTRL(loc);
             if (ctrl_id != findCTRL(paths.front()))
             {

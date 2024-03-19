@@ -11,7 +11,8 @@ typedef enum direction
     RIGHT,
     LEFT,
     UP,
-    DOWN
+    DOWN,
+    STAY
 } direction;
 typedef enum ROBOT_STATUS
 {
