@@ -219,10 +219,10 @@ void Robot::getpull()
     this->x = now.x;
     this->y = now.y;
 
-    if (status==HAVE_GOOD && maps[x][y].toBerth[Berth_ID].empty())
-    {
-        maps[x][y].toBerth[Berth_ID] = path;
-    }
+    // if (status==HAVE_GOOD && maps[x][y].toBerth[Berth_ID].empty())
+    // {
+    //     maps[x][y].toBerth[Berth_ID] = path;
+    // }
 
     if (now.x != x || now.y != y)
     {

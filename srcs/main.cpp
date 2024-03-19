@@ -90,8 +90,6 @@ int Input()
 
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-        // Good* good=new Good(x,y, val, Time);
-        // ctrls[0]->addGood(good);
 
         min_val = min(min_val, val);
         max_val = max(max_val, val);
@@ -148,7 +146,7 @@ int main()
         {
             boats[i].action();
         }
-        //frames[Time%MAGIC_NUMBER].work();
+        frames[Time%MAGIC_NUMBER].work();
         puts("OK");
         fflush(stdout);
     }

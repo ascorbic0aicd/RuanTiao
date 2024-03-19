@@ -37,6 +37,7 @@ bool Frame::remove(Good* good)
     if (it == gds.end())
     {
         LOG("can't find the good in CTRL!");
+        assert(0);
         return false;
     }
     gds.erase(it);

@@ -83,6 +83,7 @@ void Controler::Manager()
                     r->changeStatus(MOVING);
                 }
                 removeGood(gtr);
+                frames[gtr->Life() % MAGIC_NUMBER].remove(gtr);
             }
         }
         else if (r->getStatus() == HAVE_GOOD && r->path.empty())
@@ -105,15 +106,15 @@ void Controler::Manager()
             int by = btr.getY() + rand() % 4;
             int berth_id=btr.getID();
 
-            if (maps[r->getX()][r->getY()].toBerth[berth_id].empty())
-            {
-                maps[r->getX()][r->getY()].toBerth[berth_id] = r->AStarPath(r->loc(), Point(bx, by));
-                r->path = maps[r->getX()][r->getY()].toBerth[berth_id];
-            }
-            else
-            {
-                r->path = maps[r->getX()][r->getY()].toBerth[berth_id];
-            }
+            // if (maps[r->getX()][r->getY()].toBerth[berth_id].empty())
+            // {
+            //     maps[r->getX()][r->getY()].toBerth[berth_id] = r->AStarPath(r->loc(), Point(bx, by));
+            //     r->path = maps[r->getX()][r->getY()].toBerth[berth_id];
+            // }
+            // else
+            // {
+            //     r->path = maps[r->getX()][r->getY()].toBerth[berth_id];
+            // }
 
             r->path=r->AStarPath(r->loc(), Point(bx, by));
 
@@ -145,7 +146,8 @@ bool Controler::removeGood(Good *good)
         return false;
     }
     gds.erase(it);
-    //r->AStarPath(r->loc(), Point(bx, by));
+    LOG("good die time = %d, now =%d",good->life, Time);
+
     return true;
 }
 
