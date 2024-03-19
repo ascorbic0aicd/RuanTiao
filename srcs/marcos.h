@@ -20,7 +20,7 @@ typedef enum ROBOT_STATUS
     HAVE_GOOD,
     FREE,
     MOVING,
-    TO_MOVE
+    JOGGING
 } ROBOT_STATUS;
 #define PATH list
 #define PATH_TYPE Location

@@ -101,21 +101,9 @@ void clearWaypoint(priority_queue<Waypoint *, vector<Waypoint *>, cmp> &q, list<
         assert(0);
     }
 }
-bool Location::findPath(const Location &start, const Location &target, PATH<PATH_TYPE> &res, bool to_berth)
+bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE> &res, int berth_id)
 {
-    LOG("now ind the way from (%d,%d) to (%d,%d)\n", start.x, start.y, target.x, target.y);
-    int berth_ID = -1;
-    if (to_berth)
-    {
-        for (auto i : Berths)
-        {
-            if (i.getLoc() == target)
-            {
-                berth_ID = i.getID();
-                break;
-            }
-        }
-    }
+    LOG("now ind the way from (%d,%d) to (%d,%d) berth_id = %d\n", start.x, start.y, target.x, target.y,berth_id);
 
     // char t[230][230];
     // for (int i = 0; i < 230; ++i)
@@ -226,15 +214,15 @@ bool Location::findPath(const Location &start, const Location &target, PATH<PATH
                     if (temp->parent->loc != temp->loc)
                     {
                         temp->parent->remake();
-                        Waypoint *back = new Waypoint(temp->parent->loc,cost,temp->parent->guess,temp);
+                        Waypoint *back = new Waypoint(temp->parent->loc, cost, temp->parent->guess, temp);
                         q.push(back);
                     }
                 }
 
-                if (neighbours[i] == target)
+                if (neighbours[i] == target||(berth_id!=-1&& Berths[berth_id].inArea(neighbours[i])) )
                 {
                     find_way = true;
-
+                    target = neighbours[i];
                     target_waypoint = next;
                     total_cost = target_waypoint->cost;
                     break;
@@ -254,10 +242,9 @@ bool Location::findPath(const Location &start, const Location &target, PATH<PATH
             assert(maps[temp->loc.x][temp->loc.y].getType() != BARRIER && maps[temp->loc.x][temp->loc.y].getType() != SEA);
             res.push_front(temp->loc);
             maps[temp->loc.x][temp->loc.y].arrive_times.insert({Time + temp->cost, 114});
-            if (to_berth)
+            if (berth_id != -1)
             {
-                assert(berth_ID != -1);
-                maps[temp->loc.x][temp->loc.y].length_to_berth[berth_ID] = total_cost - temp->cost;
+                maps[temp->loc.x][temp->loc.y].length_to_berth[berth_id] = total_cost - temp->cost;
             }
 
             // for (auto it : maps[temp->loc.x][temp->loc.y].arrive_times)
@@ -267,10 +254,10 @@ bool Location::findPath(const Location &start, const Location &target, PATH<PATH
             temp = temp->parent;
             cnt++;
         }
-        for (auto i : res)
-        {
-            LOGLOC("(%d,%d)\n", i.x, i.y);
-        }
+        // for (auto i : res)
+        // {
+        //     LOGLOC("(%d,%d)\n", i.x, i.y);
+        // }
         if (cnt != target_waypoint->cost)
         {
             LOGERR("cnt = %d but cost=%d\n", cnt, target_waypoint->cost);

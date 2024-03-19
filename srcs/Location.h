@@ -58,7 +58,7 @@ struct Location
     Location inline getRight(){return Location(x,y+1);}
     Location inline getUp(){return Location(x-1,y);}
     Location inline getDown(){return Location(x+1,y);}
-    bool findPath(const Location &start, const Location &target, PATH<PATH_TYPE> &res,bool to_berth);
+    bool findPath(const Location &start, Location &target, PATH<PATH_TYPE> &res,int berth_id);
     bool operator==(const Location &other) const;
     bool operator!=(const Location &other) const;
 };

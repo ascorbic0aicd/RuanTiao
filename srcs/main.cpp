@@ -15,7 +15,7 @@ char ch[230][230];
 void Init()
 {
     // init the map
-   // srand(time(0));
+   srand(time(0));
     // init the ctrl
 
     for (int i = 0; i < CTRL_NUM; i++)
@@ -138,50 +138,7 @@ int main()
         LOGLOC("robots action start\n");
         for (auto rbt : robots)
         {
-            bool arrive = rbt->action();
-            if (arrive)
-            {
-                if (rbt->getStatus() == HAVE_GOOD)
-                {
-                    LOGLOC("rbt->getStatus() == HAVE_GOOD");
-                    Location target(-1, -1);
-                    Location ctrl_id = findCTRL(rbt->getLocation());
-                    Controler &old_ctrl = ctrls[ctrl_id.x][ctrl_id.y];
-                    bool succ = old_ctrl.findTraget(rbt, target);
-                    if (!succ)
-                    {
-                        Controler *neig[3] = {old_ctrl.left,old_ctrl.up,old_ctrl.left->up};
-                        for (int i = 0; i < 3; i++)
-                        {
-                            succ = neig[i]->findTraget(rbt,target);
-                            if(succ)
-                            {
-                                break;
-                            }
-                        }
-                        
-                    }
-                    assert(succ);
-                    LOG("start rm (%d,%d)\n",target.x,target.y);
-                    Location good_owner= findCTRL(target);
-                    succ = ctrls[good_owner.x][good_owner.y].removeGood(target);
-                    LOG("end rm (%d,%d)\n",target.x,target.y);
-                    assert(succ);
-                    succ = rbt->to(target, false);
-
-                    assert(succ);
-                }
-                else
-                {
-                    assert(rbt->getStatus() == MOVING);
-                    int bth_id = maps[rbt->getLocation().x][rbt->getLocation().y].nearest_Berth();
-                    bool succ = rbt->to(Berths[bth_id].getLoc(), true);
-                    assert(succ);
-                }
-
-                arrive = rbt->action();
-                assert(!arrive);
-            }
+            rbt->action();
         }
 
         LOGLOC("robots action end\n");

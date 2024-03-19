@@ -18,6 +18,7 @@ class Robot
     ROBOT_STATUS status;
     Location target;
     Location next_step;
+    vector<int> black_list;
     bool need_recheck;
     PATH<PATH_TYPE> paths;
     PATH<PATH_TYPE> old_ways;
@@ -25,7 +26,7 @@ class Robot
     int target_id;
 public:
     const int id;
-    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), target(-1, -1),next_step(-1,-1),target_id(-1)
+    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), target(-1, -1),next_step(-1,-1),target_id(-1),black_list(10,-1)
     {
         Location ctrl_id = findCTRL(loc);
         ctrls[ctrl_id.x][ctrl_id.y].addRobot(this);
@@ -33,10 +34,13 @@ public:
     inline const Location& getLocation() { return loc; }
     inline ROBOT_STATUS getStatus() { return status; };
     void checkStatus(int x, int y, bool have_good, bool can_move);
+    void arrive();
     bool action();
     inline void setStatus(ROBOT_STATUS sts){status = sts;}
     bool to(const Location &target,bool to_berth);
+    void comeBack();
+    bool findTarget();
+    void move();
 };
 
-bool check(Robot rbt, Location &next);
 extern vector<Robot *> robots;

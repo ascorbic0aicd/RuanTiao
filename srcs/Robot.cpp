@@ -10,25 +10,23 @@ vector<Robot *> robots(ROBOT_NUM);
 // vector<bool> finish_check(ROBOT_NUM, false);
 void Robot::checkStatus(int x, int y, bool have_good, bool can_move)
 {
+    if (!can_move)
+    {
+        LOGERR("why rbt[%d] is broken in frame %d?\n", id, Time);
+    }
     if (loc != Location(x, y))
     {
         LOGERR("rbt[%d] need at (%d,%d) but in fact is at (%d,%d) at frame %d\n", id, loc.x, loc.y, x, y, Time);
         assert(loc == Location(x, y));
     }
-    if (!can_move)
-    {
-        LOGERR("why rbt[%d] is broken in frame %d?\n", id, Time);
-    }
 }
 
-bool Robot::to(const Location &target, bool to_berth)
+bool Robot::to(const Location &tg, bool to_berth)
 {
     assert(paths.empty());
+    Location target = tg;
     LOGLOC("rbt[%d] begin find the path from (%d,%d) to (%d,%d) \n", id, loc.x, loc.y, target.x, target.y);
     LOGLOC("to berth is %d\n", to_berth);
-    bool succ = loc.findPath(loc, target, paths,to_berth);
-    assert(succ);
-    status = to_berth ? HAVE_GOOD : MOVING;
     if (to_berth)
     {
         for (auto bth : Berths)
@@ -41,20 +39,117 @@ bool Robot::to(const Location &target, bool to_berth)
             }
         }
     }
-
-    this->target = target;
+    bool succ = loc.findPath(loc, target, paths, to_berth ? target_id : -1);
+    if (succ)
+    {
+        old_ways.clear();
+        assert(succ);
+        status = to_berth ? HAVE_GOOD : MOVING;
+        this->target = target;
+    }
+    else
+    {
+        if (to_berth)
+        {
+            
+        }
+        
+    }
     return succ;
+}
+bool Robot::findTarget() // will set_target
+{
+    Location ctrl_id = findCTRL(loc);
+    Controler &old_ctrl = ctrls[ctrl_id.x][ctrl_id.y];
+    bool succ = old_ctrl.findTraget(this, target);
+    if (!succ)
+    {
+        Controler *neig[3] = {old_ctrl.left, old_ctrl.up, old_ctrl.left->up};
+        for (int i = 0; i < 3; i++)
+        {
+            succ = neig[i]->findTraget(this, target);
+            if (succ)
+            {
+                break;
+            }
+        }
+    }
+    succ = to(target, false);
+    if (succ)
+    {
+        LOG("start rm (%d,%d)\n", target.x, target.y);
+        Location good_owner = findCTRL(target);
+        succ = ctrls[good_owner.x][good_owner.y].removeGood(target);
+        LOG("end rm (%d,%d)\n", target.x, target.y);
+        assert(succ);
+    }
+    assert(succ);
+    return succ;
+}
+
+void Robot::arrive()
+{
+    if (status == HAVE_GOOD)
+    {
+        LOGLOC("rbt->getStatus() == HAVE_GOOD\n");
+        bool succ = findTarget();
+        if (!succ)
+        {
+            comeBack();
+        }
+    }
+    else
+    {
+        int bth_id = maps[loc.x][loc.y].nearest_Berth();
+        bool succ = to(Berths[bth_id].getLoc(), true);
+        assert(succ);
+    }
+    action();
+}
+void Robot::move()
+{
+    assert(!paths.empty());
+    assert(id >= 0 && id < BERTH_NUM);
+    direction dir = loc.directonTo(paths.front());
+    if (dir != STAY)
+    {
+
+        printf("move %d %d\n", id, dir);
+    }
+
+    Location ctrl_id = findCTRL(loc);
+    if (ctrl_id != findCTRL(paths.front()))
+    {
+        Location new_ctrl = findCTRL(paths.front());
+        LOG("move from (%d,%d) to (%d,%d)\n", ctrl_id.x, ctrl_id.y, new_ctrl.x, new_ctrl.y);
+        ctrls[ctrl_id.x][ctrl_id.y].removeRobot(this);
+        ctrls[new_ctrl.x][new_ctrl.y].addRobot(this);
+    }
+    // assert(maps[loc.x][loc.y].arrive_times.size() != 0);
+    // int sz = maps[loc.x][loc.y].arrive_times.erase(Time);
+    // if (sz == 0)
+    // {
+    //     for (auto i : maps[loc.x][loc.y].arrive_times)
+    //     {
+    //         LOGERR("{%d,%d}\n", i.first, i.second);
+    //     }
+    //     LOGERR("rbt[%d] arrive (%d,%d) at %d but can't remove arrive_time :(\n", id, loc.x, loc.y, Time);
+    //     assert(sz != 0);
+    // }
+    LOG("rbt[%d] arrive (%d,%d) from (%d,%d) at frame %d\n", id, paths.front().x, paths.front().y, loc.x, loc.y, Time);
+    old_ways.push_front(loc);
+    loc = paths.front();
+    LOG("set rbt[%d].loc = (%d,%d)\n", id, loc.x, loc.y);
+    paths.pop_front();
 }
 bool Robot::action()
 {
-
     if (status == MOVING || status == HAVE_GOOD)
     {
         LOGLOC("rbt[%d] is moving sts = %d loc = (%d,%d) target =(%d,%d)\n", id, status, loc.x, loc.y, target.x, target.y);
         if (loc == target)
         {
             assert(paths.empty());
-            // LOGLOC("x/DIV = %d, y/DIV=%d\n", loc.x / DIV, loc.y / DIV);
             if (status == MOVING)
             {
                 printf("get %d\n", id);
@@ -68,43 +163,22 @@ bool Robot::action()
                 Berths[target_id].pullGood();
             }
             LOGLOC("rbt[%d] act done\n", id);
+            arrive();
             return true;
         }
         else
         {
-            assert(!paths.empty());
-            assert(id >= 0 && id < BERTH_NUM);
-            direction dir = loc.directonTo(paths.front());
-            if (dir != STAY)
-            {
-
-                printf("move %d %d\n", id, dir);
-            }
-
-            Location ctrl_id = findCTRL(loc);
-            if (ctrl_id != findCTRL(paths.front()))
-            {
-                Location new_ctrl = findCTRL(paths.front());
-                LOG("move from (%d,%d) to (%d,%d)\n", ctrl_id.x, ctrl_id.y, new_ctrl.x, new_ctrl.y);
-                ctrls[ctrl_id.x][ctrl_id.y].removeRobot(this);
-                ctrls[new_ctrl.x][new_ctrl.y].addRobot(this);
-            }
-            // assert(maps[loc.x][loc.y].arrive_times.size() != 0);
-            // int sz = maps[loc.x][loc.y].arrive_times.erase(Time);
-            // if (sz == 0)
-            // {
-            //     for (auto i : maps[loc.x][loc.y].arrive_times)
-            //     {
-            //         LOGERR("{%d,%d}\n", i.first, i.second);
-            //     }
-            //     LOGERR("rbt[%d] arrive (%d,%d) at %d but can't remove arrive_time :(\n", id, loc.x, loc.y, Time);
-            //     assert(sz != 0);
-            // }
-            LOG("rbt[%d] arrive (%d,%d) from (%d,%d) at frame %d\n", id, paths.front().x, paths.front().y, loc.x, loc.y, Time);
-            loc = paths.front();
-            LOG("set rbt[%d].loc = (%d,%d)\n", id, loc.x, loc.y);
-            paths.pop_front();
+            move();
         }
+    }
+    else if (status == JOGGING)
+    {
+        bool succ = findTarget();
+        if (succ)
+        {
+            status = MOVING;
+        }
+        move();
     }
     else
     {
@@ -113,6 +187,13 @@ bool Robot::action()
     }
     LOGLOC("rbt[%d] act done\n", id);
     return false;
+}
+void Robot::comeBack()
+{
+    Location tg = old_ways.back();
+    bool succ = to(tg, false);
+    status = JOGGING;
+    assert(succ);
 }
 int rbt_idx = 0;
 
