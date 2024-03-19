@@ -17,13 +17,13 @@ void Robot::checkStatus(int x, int y, bool have_good, bool can_move)
     if (loc != Location(x, y))
     {
         LOGERR("rbt[%d] need at (%d,%d) but in fact is at (%d,%d) at frame %d\n", id, loc.x, loc.y, x, y, Time);
-        assert(loc == Location(x, y));
+        //assert(loc == Location(x, y));
     }
 }
 
 bool Robot::to(const Location &tg, bool to_berth)
 {
-    assert(paths.empty());
+
     Location target = tg;
     LOGLOC("rbt[%d] begin find the path from (%d,%d) to (%d,%d) \n", id, loc.x, loc.y, target.x, target.y);
     LOGLOC("to berth is %d\n", to_berth);
@@ -39,11 +39,14 @@ bool Robot::to(const Location &tg, bool to_berth)
             }
         }
     }
+    LOGLOC("beigin clear path\n");
+
+    paths.clear();
+    LOGLOC("end clear path\n");
     bool succ = loc.findPath(loc, target, paths, to_berth ? target_id : -1);
     if (succ)
     {
         old_ways.clear();
-        assert(succ);
         status = to_berth ? HAVE_GOOD : MOVING;
         this->target = target;
     }
@@ -51,9 +54,9 @@ bool Robot::to(const Location &tg, bool to_berth)
     {
         if (to_berth)
         {
-            
+            LOGERR("log can'find the way to berth?\n");
+            assert(0);
         }
-        
     }
     return succ;
 }
@@ -70,20 +73,21 @@ bool Robot::findTarget() // will set_target
             succ = neig[i]->findTraget(this, target);
             if (succ)
             {
+                LOG("succ to find target at(%d,%d)", target.x, target.y);
                 break;
             }
         }
     }
-    succ = to(target, false);
     if (succ)
     {
+        succ = to(target, false);
         LOG("start rm (%d,%d)\n", target.x, target.y);
         Location good_owner = findCTRL(target);
-        succ = ctrls[good_owner.x][good_owner.y].removeGood(target);
+        bool test = ctrls[good_owner.x][good_owner.y].removeGood(target);
         LOG("end rm (%d,%d)\n", target.x, target.y);
-        assert(succ);
+        assert(test);
     }
-    assert(succ);
+
     return succ;
 }
 
@@ -108,6 +112,11 @@ void Robot::arrive()
 }
 void Robot::move()
 {
+    if (paths.empty())
+    {
+        LOGERR("rbt[%d].paths is empty! loc =(%d,%d) target = (%d,%d),status = %d\n", id, loc.x, loc.y, target.x, target.y, status);
+    }
+
     assert(!paths.empty());
     assert(id >= 0 && id < BERTH_NUM);
     direction dir = loc.directonTo(paths.front());
@@ -178,6 +187,11 @@ bool Robot::action()
         {
             status = MOVING;
         }
+        if (target == loc)
+        {
+            comeBack();
+        }
+
         move();
     }
     else

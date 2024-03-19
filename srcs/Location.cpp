@@ -8,7 +8,7 @@
 #include <list>
 extern int Time;
 extern char ch[230][230];
-#define TOO_MANY 114514
+#define TOO_MANY 175
 struct Waypoint
 {
     Location loc;
@@ -132,9 +132,10 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
     int cnt_num = 0;
     int total_cost = 0;
     // int T_cnt = 0;
-    while (!q.empty() && !find_way)
+    while (!q.empty() && !find_way&&most_cost <TOO_MANY)
     {
         Waypoint *temp = q.top();
+        assert(temp->loc.x>0&&temp->loc.x<230 &&temp->loc.y>0&&temp->loc.y<230)
         LOGLOC("top = %d at (%d,%d)\n", temp->cost + temp->guess, temp->loc.x, temp->loc.y);
         q.pop();
         // t[temp->loc.x][temp->loc.y] = T_cnt < 10 ? '0' + T_cnt : 'A' + T_cnt - 10;
@@ -154,11 +155,6 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
         // }
 
         LOGLOC("remain size  = %d\n", q.size());
-        if (temp->cost >= TOO_MANY)
-        {
-            most_cost = temp->cost;
-            break;
-        }
         close_list.push_back(temp);
         Location neighbours[4] = {
             Location(temp->loc.x - 1, temp->loc.y),
@@ -178,7 +174,7 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
             {
                 if (maps[neighbours[i].x][neighbours[i].y].arrive_times.find(Time + temp->cost + 1) != maps[neighbours[i].x][neighbours[i].y].arrive_times.end())
                 {
-                    LOG("can't move to (%d,%d) at frame %d->0<-\n", neighbours[i].x, neighbours[y].y, Time);
+                    LOG("can't move to (%d,%d) at frame %d->0<-\n", neighbours[i].x, neighbours[i].y, Time);
                     ch[temp->loc.x][temp->loc.y] = true;
                     stay = true;
                     back = true;
@@ -187,7 +183,7 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
                 else if (maps[neighbours[i].x][neighbours[i].y].arrive_times.find(Time + temp->cost) != maps[neighbours[i].x][neighbours[i].y].arrive_times.end() &&
                          maps[temp->loc.x][temp->loc.y].arrive_times.find(Time + temp->cost + 1) != maps[temp->loc.x][temp->loc.y].arrive_times.end())
                 {
-                    LOG("can't move to (%d,%d) at frame %d because -><-\n", neighbours[i].x, neighbours[y].y, Time);
+                    LOG("can't move to (%d,%d) at frame %d because -><-\n", neighbours[i].x, neighbours[i].y, Time);
                     back = true;
                     ch[temp->loc.x][temp->loc.y] = true;
                     continue;
@@ -233,6 +229,7 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
     }
     if (find_way)
     {
+        res.clear();
         LOG("FIND THE WAY!cost =%d\n", target_waypoint->cost);
         Waypoint *temp = target_waypoint;
         int cnt = 0;
@@ -266,8 +263,7 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
     }
     else
     {
-        LOGERR("We can't find the way from (%d,%d) to (%d,%d):( cnt %d at frame %d\n", start.x, start.y, target.x, target.y, most_cost, Time);
-        LOGERR("%c", maps[target.x][target.y].getType());
+        LOG("We can't find the way from (%d,%d) to (%d,%d):( cnt %d at frame %d\n", start.x, start.y, target.x, target.y, most_cost, Time);
     }
     clearWaypoint(q, close_list);
 

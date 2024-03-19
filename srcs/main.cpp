@@ -82,7 +82,7 @@ int Input()
     {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-        if (val > 150)
+        if (val > 150&&x>5&&x<195)
         {
             //assert(0);
             LOGLOC("add good(%d,%d)val = %d start!\n", x, y, val);
@@ -146,7 +146,7 @@ int main()
         frames[Time % MAGIC_NUMBER].work();
         puts("OK");
         LOG("frame %d\n", Time);
-        checkCTRL();
+        //checkCTRL();
         fflush(stdout);
     }
 

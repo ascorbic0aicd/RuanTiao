@@ -38,7 +38,6 @@ void Controler::addGood(Good *good)
     }
     assert(ptr != nullptr);
     succ = ptr->to(good->loc, false);
-    assert(succ);
     removeGood(good->loc);
     LOGLOC("void Controler::addGood(Good *good) will ret!\n");
 }
@@ -96,6 +95,7 @@ bool Controler::findRobot(Location &loc, Robot **rbt)
 }
 bool Controler::findTraget(Robot *rbt, Location &loc)
 {
+    LOG("try to find good for rbt[%d] at (%d,%d) in ctrls[%d][%d]\n",rbt->id,rbt->getLocation().x,rbt->getLocation().y,id.x,id.y);
     Good *good = nullptr;
     int dis = 114514;
     for (auto gd : gds)
@@ -109,10 +109,12 @@ bool Controler::findTraget(Robot *rbt, Location &loc)
     }
     if (good == nullptr)
     {
+        LOG("find fail!\n");
         return false;
     }
     else
     {
+        LOG("find succ!\n");
         loc = good->loc;
         return true;
     }

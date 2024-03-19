@@ -29,13 +29,9 @@ void Boat::check(int _pos, BoatState st)
 void assignBoat()
 {
     // This is just  a stupid strategy :(
-    vector<Berth> fun = Berths;
-    for (int i = 0; i < 5; i++)
-    {
-        int cnt = rand() % (10 - i);
-        assert(cnt < fun.size());
-        fun.erase(fun.begin() + cnt);
-    }
+    vector<int> idx = {0,2,4,6,8};
+    vector<Berth> fun = {Berths[idx[0]],Berths[idx[1]],Berths[idx[2]],Berths[idx[3]],Berths[idx[4]]};
+
     for (int i = 0; i < BOAT_NUM; i++)
     {
         boats[i].berth_ID = fun[i].getID();
