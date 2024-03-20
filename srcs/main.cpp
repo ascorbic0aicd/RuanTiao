@@ -15,7 +15,7 @@ char ch[230][230];
 void Init()
 {
     // init the map
-   srand(time(0));
+    //srand(time(0));
     // init the ctrl
 
     for (int i = 0; i < CTRL_NUM; i++)
@@ -116,18 +116,10 @@ int main()
     Init();
     for (int zhen = 1; zhen <= 15000; zhen++)
     {
-        // list<Location>test;
         LOG("\nFrame =%d\n", zhen);
-        //  Location start(66, 127);
-        //  Location target(5, 135);
-        //  start.findPath(start, target, test);
-        //  assert(0);
         Input();
-        // printf("move %d %d\n",4,3);
         for (int i = 0; i < ROBOT_NUM; i++)
         {
-
-            // printf("move %d %d\n", i, rand() % 4);
             printf("get %d\n", i);
             printf("pull %d\n", i);
         }
@@ -145,8 +137,6 @@ int main()
 
         frames[Time % MAGIC_NUMBER].work();
         puts("OK");
-        LOG("frame %d\n", Time);
-        //checkCTRL();
         fflush(stdout);
     }
 

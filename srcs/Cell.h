@@ -36,7 +36,7 @@ public:
         
         
     }
-    int nearest_Berth();
+    int nearest_Berth(list<int> &black_list);
     Cell() : loc(-1,-1),type(BARRIER),length_to_berth(BERTH_NUM,-1), now_id(-1){};
     inline CellType getType() { return type; }
     void init(int x,int y,CellType type);

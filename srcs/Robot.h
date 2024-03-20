@@ -18,15 +18,15 @@ class Robot
     ROBOT_STATUS status;
     Location target;
     Location next_step;
-    vector<int> black_list;
-    bool need_recheck;
+    vector<int>missing_num;
+    list<int> black_list;
+    int cd = 0;
     PATH<PATH_TYPE> paths;
     PATH<PATH_TYPE> old_ways;
-    int try_num = 0;
     int target_id;
 public:
     const int id;
-    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), target(-1, -1),next_step(-1,-1),target_id(-1),black_list(10,-1)
+    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), target(-1, -1),next_step(-1,-1),target_id(-1),missing_num(10,0)
     {
         Location ctrl_id = findCTRL(loc);
         ctrls[ctrl_id.x][ctrl_id.y].addRobot(this);

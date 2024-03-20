@@ -12,12 +12,13 @@ void Robot::checkStatus(int x, int y, bool have_good, bool can_move)
 {
     if (!can_move)
     {
+        // rbt[5] need at (104,48) but in fact is at (104,49) at frame 190
         LOGERR("why rbt[%d] is broken in frame %d?\n", id, Time);
     }
     if (loc != Location(x, y))
     {
         LOGERR("rbt[%d] need at (%d,%d) but in fact is at (%d,%d) at frame %d\n", id, loc.x, loc.y, x, y, Time);
-        //assert(loc == Location(x, y));
+        assert(loc == Location(x, y));
     }
 }
 
@@ -41,7 +42,6 @@ bool Robot::to(const Location &tg, bool to_berth)
     }
     LOGLOC("beigin clear path\n");
 
-    paths.clear();
     LOGLOC("end clear path\n");
     bool succ = loc.findPath(loc, target, paths, to_berth ? target_id : -1);
     if (succ)
@@ -49,14 +49,6 @@ bool Robot::to(const Location &tg, bool to_berth)
         old_ways.clear();
         status = to_berth ? HAVE_GOOD : MOVING;
         this->target = target;
-    }
-    else
-    {
-        if (to_berth)
-        {
-            LOGERR("log can'find the way to berth?\n");
-            assert(0);
-        }
     }
     return succ;
 }
@@ -87,7 +79,10 @@ bool Robot::findTarget() // will set_target
         LOG("end rm (%d,%d)\n", target.x, target.y);
         assert(test);
     }
-
+    else
+    {
+        comeBack();
+    }
     return succ;
 }
 
@@ -100,13 +95,30 @@ void Robot::arrive()
         if (!succ)
         {
             comeBack();
+            status = JOGGING;
         }
     }
     else
     {
-        int bth_id = maps[loc.x][loc.y].nearest_Berth();
+        int bth_id = maps[loc.x][loc.y].nearest_Berth(black_list);
         bool succ = to(Berths[bth_id].getLoc(), true);
-        assert(succ);
+
+        // DEBUG
+        if (id == 2)
+        {
+            LOG("rbt[2] succ = %d at frame %d\n", succ, Time);
+        }
+
+        if (!succ)
+        {
+            missing_num[bth_id]++;
+            if (missing_num[bth_id] == 3)
+            {
+                black_list.push_back(bth_id);
+            }
+            cd = 3;
+            status = FINDING;
+        }
     }
     action();
 }
@@ -116,8 +128,14 @@ void Robot::move()
     {
         LOGERR("rbt[%d].paths is empty! loc =(%d,%d) target = (%d,%d),status = %d\n", id, loc.x, loc.y, target.x, target.y, status);
     }
+    // if (paths.empty())
+    // {
+    //     status==FREE;
+    //     return;
+    // }
 
     assert(!paths.empty());
+
     assert(id >= 0 && id < BERTH_NUM);
     direction dir = loc.directonTo(paths.front());
     if (dir != STAY)
@@ -148,17 +166,23 @@ void Robot::move()
     LOG("rbt[%d] arrive (%d,%d) from (%d,%d) at frame %d\n", id, paths.front().x, paths.front().y, loc.x, loc.y, Time);
     old_ways.push_front(loc);
     loc = paths.front();
-    LOG("set rbt[%d].loc = (%d,%d)\n", id, loc.x, loc.y);
+    // LOG("set rbt[%d].loc = (%d,%d)\n", id, loc.x, loc.y);
     paths.pop_front();
 }
 bool Robot::action()
 {
+    char s[][100] = {"BROKEN", "HAVE_GOOD", "FREE", "MOVING", "JOGGING", "FINDING"};
+    if (id == 8)
+    {
+        LOG("*rbt[8].status = %s at frame %d\n", s[status], Time);
+    }
+
     if (status == MOVING || status == HAVE_GOOD)
     {
         LOGLOC("rbt[%d] is moving sts = %d loc = (%d,%d) target =(%d,%d)\n", id, status, loc.x, loc.y, target.x, target.y);
         if (loc == target)
         {
-            assert(paths.empty());
+            //assert(paths.empty());
             if (status == MOVING)
             {
                 printf("get %d\n", id);
@@ -194,6 +218,35 @@ bool Robot::action()
 
         move();
     }
+    else if (status == FINDING)
+    {
+        if (cd == 0)
+        {
+            int bth_id = maps[loc.x][loc.y].nearest_Berth(black_list);
+            bool succ = to(Berths[bth_id].getLoc(), true);
+            if (!succ)
+            {
+                missing_num[bth_id]++;
+                if (missing_num[bth_id] == 3)
+                {
+                    black_list.push_back(bth_id);
+                }
+                cd = 3;
+                status = FINDING;
+            }
+            else
+            {
+                LOG("rbt[%d] find berth at frame %d to (%d,%d)", id, Time, target.x, target.y);
+                action();
+            }
+        }
+        else
+        {
+            move();
+            cd--;
+        }
+    }
+
     else
     {
         LOG("rbt[%d] is free at Frame %d\n", id, Time);
@@ -206,8 +259,8 @@ void Robot::comeBack()
 {
     Location tg = old_ways.back();
     bool succ = to(tg, false);
-    status = JOGGING;
-    assert(succ);
+
+    // assert(succ);
 }
 int rbt_idx = 0;
 

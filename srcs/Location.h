@@ -62,3 +62,4 @@ struct Location
     bool operator==(const Location &other) const;
     bool operator!=(const Location &other) const;
 };
+int canGo(const Location &target, const  Location &loc,int arrive_time);

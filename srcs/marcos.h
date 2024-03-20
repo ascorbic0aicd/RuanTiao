@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdio>
 
-#define LOG(...) //fprintf(stderr,__VA_ARGS__)
+#define LOG(...) fprintf(stderr,__VA_ARGS__)
 #define LOGERR(...) fprintf(stderr,__VA_ARGS__)
 #define LOGLOC(...) //fprintf(stderr,__VA_ARGS__)
 #include<list>
@@ -20,7 +20,8 @@ typedef enum ROBOT_STATUS
     HAVE_GOOD,
     FREE,
     MOVING,
-    JOGGING
+    JOGGING,
+    FINDING
 } ROBOT_STATUS;
 #define PATH list
 #define PATH_TYPE Location
