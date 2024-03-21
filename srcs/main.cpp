@@ -15,7 +15,7 @@ char ch[230][230];
 void Init()
 {
     // init the map
-    //srand(time(0));
+    srand(time(0));
     // init the ctrl
 
     for (int i = 0; i < CTRL_NUM; i++)
@@ -82,7 +82,7 @@ int Input()
     {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-        if (val > 150&&x>5&&x<195)
+        if (val > 170)
         {
             //assert(0);
             LOGLOC("add good(%d,%d)val = %d start!\n", x, y, val);

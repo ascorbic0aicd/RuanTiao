@@ -223,7 +223,7 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
                 }
             }
         }
-        if (temp->cost > 10 && temp->cost < 15 && (wide_num >= 2 || magic_point == nullptr))
+        if ((magic_point ==nullptr && temp->cost >5)|| (temp->cost > 10 && temp->cost < 15 && (wide_num >= 2 || magic_point == nullptr)))
         {
             if (magic_point == nullptr)
             {

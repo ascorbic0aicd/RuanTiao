@@ -25,7 +25,7 @@ public:
     inline int getTransport_time() const { return transport_time; }
     inline bool inArea(const Location &other)
     {
-        return other.x > loc.x && other.y > loc.y && (other.x - loc.x < 3) && (other.y - loc.y < 3);
+        return other.x > loc.x && other.y > loc.y && (other.x - loc.x <= 3) && (other.y - loc.y <= 3);
     }
     void init(int x, int y, int transport_time, int loading_speed, int ID);
     bool operator<(const Berth &) const;
