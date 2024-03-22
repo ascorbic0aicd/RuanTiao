@@ -3,16 +3,26 @@
 #include "Good.h"
 #include "marcos.h"
 #include "Cell.h"
+#include "Boat.h"
 #include <cassert>
 #include <algorithm>
 #include <random>
+#include <cmath>
 #define ARG1 15
 #define ARG2 5
 #define MIN_ARG 20
 extern int Time;
+const int para4 = 100;
+const int para5 = 2;
 vector<vector<Controler>> ctrls(CTRL_NUM, vector<Controler>(CTRL_NUM));
 
-void Controler::init(int x, int y)
+int evalprio(int x,int y)
+{
+    //return max(x,y);
+    return x * para4 + y * para5;
+}
+
+void Controler::init(int x, int y) // 1
 {
     // TODO
     id = Location(x, y);
@@ -41,7 +51,7 @@ void Controler::addGood(Good *good)
     removeGood(good->loc);
     LOGLOC("void Controler::addGood(Good *good) will ret!\n");
 }
-void Controler::addRobot(Robot *rbt)
+void Controler::addRobot(Robot *rbt) // 2
 {
     assert(rbt != nullptr);
     for (auto i : rbts)
@@ -59,6 +69,362 @@ void Controler::addRobot(Robot *rbt)
         free_rbts_nums++;
     }
 }
+void Controler::addBerth(Berth *berth) // 3
+{
+    brhs.push_back(berth);
+    // berth_num++;
+}
+
+
+void redistribution()
+{
+    int noberth = 0, oneberth = 0, manyberth = 0;
+    list<Berth *> temp[4];
+    Location randcenter[4];
+    for (int i = 0; i < CTRL_NUM; i++)
+    {
+        for (int j = 0; j < CTRL_NUM; j++)
+        {
+            int dx = i * (200 / CTRL_NUM) + 200 / CTRL_NUM / 4;
+            int dy = j * (200 / CTRL_NUM) + 200 / CTRL_NUM / 4;
+            int cx, cy;
+            do
+            {
+                cx = rand() % (200 / CTRL_NUM / 2);
+                cy = rand() % (200 / CTRL_NUM / 2);
+                // LOG("maps[%d][%d]\n",dx+cx,dy+cy);
+                assert(dx + cx >= 1 && dx + cx <= 200 && dy + cy >= 1 && dy + cy <= 200);
+            } while (maps[dx + cx][dy + cy].getType() == BARRIER || maps[dx + cx][dy + cy].getType() == SEA);
+            assert(maps[dx + cx][dy + cy].getType() != BARRIER && maps[dx + cx][dy + cy].getType() != SEA);
+            randcenter[i * CTRL_NUM + j] = Location(dx + cx, dy + cy);
+        }
+    }
+
+    vector<pair<int, int>> nullctrl;
+
+    int min = 100000000;
+    Berth *ptr = nullptr;
+    PATH<PATH_TYPE> path;
+    for (int i = 0; i < CTRL_NUM; i++)
+    {
+        for (int j = 0; j < CTRL_NUM; j++)
+        {
+            if (ctrls[i][j].brhs.size() == 1)
+            {
+                oneberth++;
+                choose_bid.push_back(ctrls[i][j].brhs.front()->ID);
+                LOG("choose berth %d\n", ptr->ID);
+                temp[i * CTRL_NUM + j].push_back(ctrls[i][j].brhs.front());
+                ctrls[i][j].brhs.clear();
+                LOG("one\n");
+            }
+            else if (ctrls[i][j].brhs.size() >= 2)
+            {
+                manyberth++;
+                LOG("two\n\n");
+                min = 100000000;
+                ptr = nullptr;
+                for (auto b : ctrls[i][j].brhs)
+                {
+                    path.clear();
+                    LOG("randcenter[%d]=(%d,%d),type=%d\n", i * CTRL_NUM + j, randcenter[i * CTRL_NUM + j].x, randcenter[i * CTRL_NUM + j].y, maps[randcenter[i * CTRL_NUM + j].x][randcenter[i * CTRL_NUM + j].y].getType());
+                    Location temploc=b->loc;
+                    assert(b->inArea(b->loc));
+                    while (!randcenter[i * CTRL_NUM + j].findPath(randcenter[i * CTRL_NUM + j], temploc, path, b->ID, false))
+                    {
+                        int dx = i * (200 / CTRL_NUM) + 200 / CTRL_NUM / 4;
+                        int dy = j * (200 / CTRL_NUM) + 200 / CTRL_NUM / 4;
+                        int cx, cy;
+                        do
+                        {
+                            cx = rand() % (200 / CTRL_NUM / 2);
+                            cy = rand() % (200 / CTRL_NUM / 2);
+                            // LOG("maps[%d][%d]\n",dx+cx,dy+cy);
+                            assert(dx + cx >= 1 && dx + cx <= 200 && dy + cy >= 1 && dy + cy <= 200);
+                        } while (maps[dx + cx][dy + cy].getType() == BARRIER || maps[dx + cx][dy + cy].getType() == SEA);
+                        assert(maps[dx + cx][dy + cy].getType() != BARRIER && maps[dx + cx][dy + cy].getType() != SEA);
+                        randcenter[i * CTRL_NUM + j] = Location(dx + cx, dy + cy);
+                        // int prio=b->priority * para4 + path.size() * boat_capacity / 2 * para5;
+                    }
+
+                    int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
+                    LOG("b->evalWeight()=%d, path.size() * boat_capacity / 2=%d, path.size()=%d,boat_capacity=%d\n", b->evalWeight(), path.size() * boat_capacity / 2, path.size(), boat_capacity);
+                    if (prio < min)
+                    {
+                        min = b->priority;
+                        ptr = b;
+                    }
+                }
+                if (ptr != nullptr)
+                {
+                    choose_bid.push_back(ptr->ID);
+                    LOG("choose berth %d\n", ptr->ID);
+                    temp[i * CTRL_NUM + j].push_back(ptr);
+                    auto it = find(ctrls[i][j].brhs.begin(), ctrls[i][j].brhs.end(), ptr);
+                    ctrls[i][j].brhs.erase(it);
+                }
+                else
+                {
+                    assert(0);
+                }
+            }
+            else
+            {
+                noberth++;
+                nullctrl.push_back(pair<int, int>(i, j));
+            }
+        }
+    }
+    assert(noberth + oneberth + manyberth == 4);
+    // LOG("noberth+oneberth+manyberth=%d\n",noberth+oneberth+manyberth);
+
+    Controler *ctr = nullptr;
+    LOG("nullctrl num=%d\n", nullctrl.size());
+    for (auto it : nullctrl)
+    {
+        Controler &null_ctrl = ctrls[it.first][it.second];
+        vector<Controler *> nei = {null_ctrl.left, null_ctrl.right};
+        ptr = nullptr;
+        min = 1000000000;
+        path.clear();
+        for (auto ne : nei)
+        {
+            if (!ne->brhs.empty())
+            {
+                LOG("there is b\n");
+                for (auto b : ne->brhs)
+                {
+                    LOG("randcenter[%d]=(%d,%d)\n", it.first * CTRL_NUM + it.second, randcenter[it.first * CTRL_NUM + it.second].x, randcenter[it.first * CTRL_NUM + it.second].y);
+                    Location temploc=b->loc;
+                    if (randcenter[it.first * CTRL_NUM + it.second].findPath(randcenter[it.first * CTRL_NUM + it.second], temploc, path, b->ID, false))
+                    {
+                        // LOG("path.size()=%d\n",path.size());
+                        int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
+                        LOG("b->evalWeight()=%d, path.size() * boat_capacity / 2=%d, path.size()=%d,boat_capacity=%d\n", b->evalWeight(), path.size() * boat_capacity / 2, path.size(), boat_capacity);
+                        if (prio < min)
+                        {
+                            min = b->priority;
+                            ptr = b;
+                            ctr = ne;
+                        }
+                    }
+                }
+            }
+        }
+        if (ptr != nullptr)
+        {
+            choose_bid.push_back(ptr->ID);
+            LOG("choose berth %d\n", ptr->ID);
+            temp[it.first * CTRL_NUM + it.second].push_back(ptr);
+
+            auto goal = find(ctr->brhs.begin(), ctr->brhs.end(), ptr);
+            if (goal != null_ctrl.left->brhs.end())
+            {
+                ctr->brhs.erase(goal);
+            }
+            else
+            {
+                assert(0);
+            }
+        }
+        else
+        {
+            assert(0);
+        }
+    }
+
+    LOG("choose_bid.size=%d\n", choose_bid.size());
+    assert(choose_bid.size() == 4);
+
+    ptr = nullptr;
+    ctr = nullptr;
+    min = 1000000000;
+    path.clear();
+    for (int i = 0; i < CTRL_NUM; i++)
+    {
+        for (int j = 0; j < CTRL_NUM; j++)
+        {
+            if (!ctrls[i][j].brhs.empty())
+            {
+                for (auto b : ctrls[i][j].brhs)
+                {
+                    Location temploc=b->loc;
+                    if (randcenter[i * CTRL_NUM + j].findPath(randcenter[i * CTRL_NUM + j], temploc, path, b->ID, false))
+                    {
+                        int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
+                        if (prio < min)
+                        {
+                            min = b->priority;
+                            ptr = b;
+                            ctr = &ctrls[i][j];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (ptr != nullptr)
+    {
+        choose_bid.push_back(ptr->ID);
+        LOG("choose berth %d\n", ptr->ID);
+
+        for (int i = 0; i < CTRL_NUM; i++)
+        {
+            for (int j = 0; j < CTRL_NUM; j++)
+            {
+                ctrls[i][j].brhs.clear();
+                assert(temp[i * CTRL_NUM + j].size() == 1);
+                ctrls[i][j].brhs.push_back(temp[i * CTRL_NUM + j].front());
+            }
+        }
+        ctr->brhs.push_back(ptr);
+    }
+    else
+    {
+        assert(0);
+    }
+
+    // robot
+    list<Robot *> tempr[4];
+    list<pair<pair<int, int>, int>> need;
+
+    path.clear();
+    for (int i = 0; i < CTRL_NUM; i++)
+    {
+        for (int j = 0; j < CTRL_NUM; j++)
+        {
+            LOGERR("i=%d,j=%d berth num=%d, robot num=%d\n", i, j, ctrls[i][j].brhs.size(), ctrls[i][j].rbts.size());
+            if (ctrls[i][j].brhs.size() * 2 <= ctrls[i][j].rbts.size())
+            {
+                int k = ctrls[i][j].brhs.size() * 2;
+                for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
+                {
+                    assert(!ctrls[i][j].brhs.empty());
+                    Location temploc=ctrls[i][j].brhs.front()->loc;
+                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
+                    {
+                        tempr[i * CTRL_NUM + j].push_back(*it);
+                        it = ctrls[i][j].rbts.erase(it);
+                        LOGERR("add robot\n");
+                        k--;
+                    }
+                    else
+                    {
+                        ++it;
+                        k--;
+                    }
+                    if (k == 0)
+                    {
+                        break;
+                    }
+                }
+                if (k > 0)
+                { // there are/is robot can't go to the berth;
+                    assert(0);
+                }
+            }
+            else if (ctrls[i][j].brhs.size() * 2 > ctrls[i][j].rbts.size())
+            {
+                int k = ctrls[i][j].rbts.size();
+                int p = ctrls[i][j].brhs.size() * 2 - ctrls[i][j].rbts.size();
+                LOGERR("k=%d,p=%d\n", k, p);
+
+                for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
+                {
+                    Location temploc= ctrls[i][j].brhs.front()->loc;
+                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
+                    {
+                        tempr[i * CTRL_NUM + j].push_back(*it);
+                        LOGERR("add robot\n");
+                        it = ctrls[i][j].rbts.erase(it);
+                        k--;
+                    }
+                    else
+                    {
+                        ++it;
+                        k--;
+                    }
+                    if (k == 0)
+                    {
+                        break;
+                    }
+                }
+                if (k > 0)
+                {
+                    assert(0);
+                }
+                need.push_back(pair<pair<int, int>, int>(pair<int, int>(i, j), p));
+                LOGERR("need i=%d,j=%d\n", i, j);
+            }
+        }
+    }
+    LOGERR("num of need=%d\n", need.size());
+
+    for (auto l : need)
+    {
+        Controler &ctrl = ctrls[l.first.first][l.first.second];
+        LOGERR("ctrls[%d][%d]\n", l.first.first, l.first.second);
+        vector<Controler *> nei = {ctrl.up, ctrl.left, ctrl.left->up};
+        int k = l.second;
+        for (auto ne : nei)
+        {
+            if (!ne->rbts.empty())
+            {
+                for (auto it = ne->rbts.begin(); it != ne->rbts.end() && k > 0;)
+                {
+                    Location temploc= ctrl.brhs.front()->loc;
+                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrl.brhs.front()->ID, false))
+                    {
+                        tempr[l.first.first * CTRL_NUM + l.first.second].push_back(*it);
+                        it = ne->rbts.erase(it);
+                        LOGERR("add robot\n");
+                        k--;
+                    }
+                    else
+                    {
+                        ++it;
+                        k--;
+                    }
+                }
+            }
+            if (k == 0)
+            {
+                break;
+            }
+        }
+        if (k > 0)
+        {
+            // assert(0);
+        }
+    }
+
+    for (int i = 0; i < CTRL_NUM; i++)
+    {
+        for (int j = 0; j < CTRL_NUM; j++)
+        {
+            // assert(ctrls[i][j].rbts.empty());
+            //ctrls[i][j].rbts.clear();
+            for (auto it : tempr[i * CTRL_NUM + j])
+            {
+                ctrls[i][j].rbts.push_back(it);
+                it->ctrl_id = Location(i, j);
+            }
+            LOGERR("ctrls[%d][%d] has robots %d berth %d\n", i, j, ctrls[i][j].rbts.size(), ctrls[i][j].brhs.size());
+            for (auto r : ctrls[i][j].rbts)
+            {
+                LOGERR("robots id=%d\n", r->id);
+            
+            }
+            for (auto b : ctrls[i][j].brhs)
+            {
+                LOGERR("berth id=%d\n", b->ID);
+                assert(Berths[b->ID].loc==b->loc);
+            }
+        }
+    }
+    //assert(0);
+}
+
 void Controler::action()
 {
 
@@ -95,7 +461,7 @@ bool Controler::findRobot(Location &loc, Robot **rbt)
 }
 bool Controler::findTraget(Robot *rbt, Location &loc)
 {
-    LOG("try to find good for rbt[%d] at (%d,%d) in ctrls[%d][%d]\n",rbt->id,rbt->getLocation().x,rbt->getLocation().y,id.x,id.y);
+    LOG("try to find good for rbt[%d] at (%d,%d) in ctrls[%d][%d]\n", rbt->id, rbt->getLocation().x, rbt->getLocation().y, id.x, id.y);
     Good *good = nullptr;
     int dis = 114514;
     for (auto gd : gds)

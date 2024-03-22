@@ -24,17 +24,18 @@ void Robot::checkStatus(int x, int y, bool have_good, bool can_move)
 
 bool Robot::to(const Location &tg, bool to_berth)
 {
-
+    LOG("*log find the way to %d\n",tg.x,tg.y);
     Location target = tg;
     LOGLOC("rbt[%d] begin find the path from (%d,%d) to (%d,%d) \n", id, loc.x, loc.y, target.x, target.y);
     LOGLOC("to berth is %d\n", to_berth);
     if (to_berth)
     {
-        for (auto bth : Berths)
+
+        for (auto bth : ctrls[ctrl_id.x][ctrl_id.y].brhs)
         {
-            if (bth.getLoc() == target)
+            if (bth->getLoc() == target)
             {
-                target_id = bth.getID();
+                target_id = bth->getID();
                 assert(id >= 0 && id < BERTH_NUM);
                 break;
             }
@@ -43,6 +44,7 @@ bool Robot::to(const Location &tg, bool to_berth)
     LOGLOC("beigin clear path\n");
 
     LOGLOC("end clear path\n");
+
     bool succ = loc.findPath(loc, target, paths, to_berth ? target_id : -1);
     if (succ)
     {
@@ -54,7 +56,9 @@ bool Robot::to(const Location &tg, bool to_berth)
 }
 bool Robot::findTarget() // will set_target
 {
-    Location ctrl_id = findCTRL(loc);
+    // Location ctrl_id = findCTRL(loc);
+    // Controler &old_ctrl = ctrls[ctrl_id.x][ctrl_id.y];
+    // bool succ = old_ctrl.findTraget(this, target);
     Controler &old_ctrl = ctrls[ctrl_id.x][ctrl_id.y];
     bool succ = old_ctrl.findTraget(this, target);
     if (!succ)
@@ -100,7 +104,9 @@ void Robot::arrive()
     }
     else
     {
-        int bth_id = maps[loc.x][loc.y].nearest_Berth(black_list);
+        // int bth_id = maps[loc.x][loc.y].nearest_Berth(black_list);
+        int bth_id = ctrls[ctrl_id.x][ctrl_id.y].brhs.front()->getID();
+        
         bool succ = to(Berths[bth_id].getLoc(), true);
 
         // DEBUG
@@ -144,14 +150,15 @@ void Robot::move()
         printf("move %d %d\n", id, dir);
     }
 
-    Location ctrl_id = findCTRL(loc);
-    if (ctrl_id != findCTRL(paths.front()))
-    {
-        Location new_ctrl = findCTRL(paths.front());
-        LOG("move from (%d,%d) to (%d,%d)\n", ctrl_id.x, ctrl_id.y, new_ctrl.x, new_ctrl.y);
-        ctrls[ctrl_id.x][ctrl_id.y].removeRobot(this);
-        ctrls[new_ctrl.x][new_ctrl.y].addRobot(this);
-    }
+    // Location ctrl_id = findCTRL(loc);
+    // if (ctrl_id != findCTRL(paths.front()))
+    // {
+    //     Location new_ctrl = findCTRL(paths.front());
+    //     LOG("move from (%d,%d) to (%d,%d)\n", ctrl_id.x, ctrl_id.y, new_ctrl.x, new_ctrl.y);
+    //     ctrls[ctrl_id.x][ctrl_id.y].removeRobot(this);
+    //     ctrls[new_ctrl.x][new_ctrl.y].addRobot(this);
+    // }
+
     // assert(maps[loc.x][loc.y].arrive_times.size() != 0);
     // int sz = maps[loc.x][loc.y].arrive_times.erase(Time);
     // if (sz == 0)
@@ -171,10 +178,10 @@ void Robot::move()
 }
 bool Robot::action()
 {
+    //LOG("rbt[%d] status = %d,target =(%d,%d)\n", id, status, target.x, target.y);
     char s[][100] = {"BROKEN", "HAVE_GOOD", "FREE", "MOVING", "JOGGING", "FINDING"};
-    if (id == 8)
     {
-        LOG("*rbt[8].status = %s at frame %d\n", s[status], Time);
+        LOG("*rbt[%d].status = %s at frame %d target =(%d,%d)\n",id, s[status], Time,target.x,target.y);
     }
 
     if (status == MOVING || status == HAVE_GOOD)
@@ -182,7 +189,7 @@ bool Robot::action()
         LOGLOC("rbt[%d] is moving sts = %d loc = (%d,%d) target =(%d,%d)\n", id, status, loc.x, loc.y, target.x, target.y);
         if (loc == target)
         {
-            //assert(paths.empty());
+            // assert(paths.empty());
             if (status == MOVING)
             {
                 printf("get %d\n", id);
@@ -192,6 +199,7 @@ bool Robot::action()
             {
                 assert(status == HAVE_GOOD);
                 printf("pull %d\n", id);
+                
                 LOGLOC("pull %d\n", id);
                 Berths[target_id].pullGood();
             }
@@ -222,7 +230,8 @@ bool Robot::action()
     {
         if (cd == 0)
         {
-            int bth_id = maps[loc.x][loc.y].nearest_Berth(black_list);
+            // int bth_id = maps[loc.x][loc.y].nearest_Berth(black_list);
+            int bth_id = ctrls[ctrl_id.x][ctrl_id.y].brhs.front()->getID();
             bool succ = to(Berths[bth_id].getLoc(), true);
             if (!succ)
             {

@@ -104,10 +104,14 @@ void clearWaypoint(priority_queue<Waypoint *, vector<Waypoint *>, cmp> &q, list<
     }
 }
 
-bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE> &res, int berth_id)
+bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE> &res, int berth_id, bool analysis)
 {
     LOG("now ind the way from (%d,%d) to (%d,%d) berth_id = %d\n", start.x, start.y, target.x, target.y, berth_id);
-
+    if (berth_id!=-1)
+    {
+        assert(Berths[berth_id].inArea(target));
+    }
+    
     Waypoint *magic_point = nullptr;
     char t[230][230];
     for (int i = 0; i < 230; ++i)
@@ -251,7 +255,11 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
             assert(temp != nullptr);
             assert(maps[temp->loc.x][temp->loc.y].getType() != BARRIER && maps[temp->loc.x][temp->loc.y].getType() != SEA);
             res.push_front(temp->loc);
-            maps[temp->loc.x][temp->loc.y].arrive_times.insert({Time + temp->cost, 114});
+            if(analysis)
+            {
+                maps[temp->loc.x][temp->loc.y].arrive_times.insert({Time + temp->cost, 114});
+            }
+            
             if (berth_id != -1)
             {
                 maps[temp->loc.x][temp->loc.y].length_to_berth[berth_id] = total_cost - temp->cost;
@@ -265,6 +273,12 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
     else
     {
         res.clear();
+        if (magic_point==nullptr)
+        {
+           LOGERR("No magic_point from (%d,%d) to (%d,%d)\n",start.x,start.y,target.x,target.y);
+            return false;
+        }
+        
         assert(magic_point!=nullptr);
         Waypoint *temp = magic_point;
         LOG("random point = (%d,%d) cost = %d\n",magic_point->loc.x,magic_point->loc.y,magic_point->cost);
@@ -274,7 +288,11 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
             assert(temp != nullptr);
             assert(maps[temp->loc.x][temp->loc.y].getType() != BARRIER && maps[temp->loc.x][temp->loc.y].getType() != SEA);
             res.push_front(temp->loc);
-            maps[temp->loc.x][temp->loc.y].arrive_times.insert({Time + temp->cost, 114});
+            if(analysis)
+            {
+                maps[temp->loc.x][temp->loc.y].arrive_times.insert({Time + temp->cost, 114});
+            }
+            
             temp = temp->parent;
             cnt++;
         }
@@ -285,11 +303,11 @@ bool Location::findPath(const Location &start, Location &target, PATH<PATH_TYPE>
         {
             LOG("(%d,%d)\n",i.x,i.y);
         }
-        if (cnt != temp->cost)
-        {
-            LOGERR("cnt = %d but cost=%d\n", cnt, temp->cost);
-            assert(cnt != temp->cost);
-        }
+        // if (cnt != temp->cost)
+        // {
+        //     LOG("cnt = %d but cost=%d\n", cnt, temp->cost);
+        //     assert(cnt != temp->cost);
+        // }
         target = magic_point->loc;
         LOG("We can't find the way from (%d,%d) to (%d,%d):( cnt %d at frame %d\n",start_waypoint->loc.x, start_waypoint->loc.y, target.x, target.y, most_cost, Time);
     }

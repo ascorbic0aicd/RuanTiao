@@ -5,6 +5,7 @@ using namespace std;
 
 #define ROBOT_NUM 10
 extern int rbt_idx;
+
 #include "Controler.h"
 #include <cmath>
 #include <queue>
@@ -13,7 +14,7 @@ extern int rbt_idx;
 class Robot
 {
     friend bool check(Robot rbt, Location &next);
-    
+    friend void redistribution();
     Location loc;
     ROBOT_STATUS status;
     Location target;
@@ -24,12 +25,13 @@ class Robot
     PATH<PATH_TYPE> paths;
     PATH<PATH_TYPE> old_ways;
     int target_id;
+    Location ctrl_id;
 public:
     const int id;
-    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), target(-1, -1),next_step(-1,-1),target_id(-1),missing_num(10,0)
+    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), target(-1, -1),next_step(-1,-1),target_id(-1),missing_num(10,0),ctrl_id(0,0)
     {
-        Location ctrl_id = findCTRL(loc);
-        ctrls[ctrl_id.x][ctrl_id.y].addRobot(this);
+        Location temp_ctrl_id = findCTRL(loc);
+        ctrls[temp_ctrl_id.x][temp_ctrl_id.y].addRobot(this);
     }
     inline const Location& getLocation() { return loc; }
     inline ROBOT_STATUS getStatus() { return status; };

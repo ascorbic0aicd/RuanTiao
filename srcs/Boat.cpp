@@ -28,15 +28,12 @@ void Boat::check(int _pos, BoatState st)
 }
 void assignBoat()
 {
-    // This is just  a stupid strategy :(
-    vector<int> idx = {0,2,4,6,8};
-    vector<Berth> fun = {Berths[idx[0]],Berths[idx[1]],Berths[idx[2]],Berths[idx[3]],Berths[idx[4]]};
-
+    assert(choose_bid.size()==BOAT_NUM);
     for (int i = 0; i < BOAT_NUM; i++)
     {
-        boats[i].berth_ID = fun[i].getID();
+        boats[i].berth_ID = choose_bid[i];
         boats[i].status = READY;
-        boats[i].target = fun[i].getID();
+        boats[i].target = choose_bid[i];
     }
 }
 
@@ -84,6 +81,7 @@ void Boat::move()
     }
     else
     {
+        
         assert(target < BERTH_NUM && target >= 0);
         printf("ship %d %d\n", ID, target);
         Berths[target].have_boat = true;

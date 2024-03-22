@@ -29,7 +29,7 @@ debug:$(TARGET)
 	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l NONE -s $(RAND) -f 0 
 run: $(TARGET)
 	echo 'map = $(IDX) seed =$(RAND)' >>logs/info.log
-	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l NONE -s $(RAND) -f 0
+	./PreliminaryJudge ./$(TARGET) -m ./maps/map$(IDX).txt -l NONE -s $(RAND) -f 0 
 replay:
 	./replayer/CodeCraft_2024_Replay.x86_64
 rmrply:

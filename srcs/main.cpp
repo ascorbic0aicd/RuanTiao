@@ -60,6 +60,8 @@ void Init()
         scanf("%d%d%d%d", &x, &y, &transport_time, &loading_speed);
 
         Berths[id].init(x + 1, y + 1, transport_time, loading_speed, id);
+        Location a(Berths[id].getLoc().x,Berths[id].getLoc().y);
+        assert(maps[a.x][a.y].getType()==PORT);
         LOG("transport_time = %d, loading_speed = %d\n", transport_time, loading_speed);
     }
     scanf("%d", &boat_capacity);
@@ -67,7 +69,10 @@ void Init()
 
     char okk[100];
     scanf("%s", okk);
+    //adjust();
+    redistribution();
     initBoat();
+
     printf("OK\n");
     fflush(stdout);
 }
@@ -118,11 +123,11 @@ int main()
     {
         LOG("\nFrame =%d\n", zhen);
         Input();
-        for (int i = 0; i < ROBOT_NUM; i++)
-        {
-            printf("get %d\n", i);
-            printf("pull %d\n", i);
-        }
+        // for (int i = 0; i < ROBOT_NUM; i++)
+        // {
+        //     printf("get %d\n", i);
+        //     printf("pull %d\n", i);
+        // }
         for (int i = 0; i < BOAT_NUM; i++)
         {
             boats[i].action();
