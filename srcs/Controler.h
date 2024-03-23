@@ -23,6 +23,7 @@ private:
     friend void redistribution2();
     friend void redistribution3();
     friend void redistribution();
+    friend void robot_redistribute(int berth_ID);
 public:
     vector<Berth *> brhs;
     Controler() : id(-1, -1){};
@@ -45,6 +46,7 @@ void redistribution1();
 void redistribution2();
 void redistribution3();
 void redistribution();
+void robot_redistribute(int berth_ID);
 inline Location findCTRL(const Location &loc)
 {
     return Location((loc.x - 1) / (200 / CTRL_NUM), (loc.y - 1) / (200 / CTRL_NUM));

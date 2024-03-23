@@ -12,7 +12,7 @@ class Boat
 {
     friend void assignBoat();
     friend void initBoat();
-
+    friend void robot_redistribute(int berth_ID);
 private:
     int pos;
     BoatState status;

@@ -20,7 +20,7 @@ void Berth::init(int x, int y, int transport_time, int loading_speed, int ID)
     have_boat = 0;
     this->ID = ID;
     priority=0;
-    Location ctrl_id = findCTRL(loc);
+    ctrl_id = findCTRL(loc);
     ctrls[ctrl_id.x][ctrl_id.y].addBerth(this);
 }
 int Berth::evalWeight() const
@@ -41,11 +41,13 @@ int Berth::transportGood()
     assert(capacity >= 0);
     return ret;
 }
-
+extern int Time;
 void Berth::pullGood()
 {
     capacity++;
+    
 }
+    
 
 void adjust()
 {

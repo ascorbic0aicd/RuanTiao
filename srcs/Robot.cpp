@@ -187,6 +187,8 @@ void Robot::move()
     // LOG("set rbt[%d].loc = (%d,%d)\n", id, loc.x, loc.y);
     paths.pop_front();
 }
+extern int robotpull70[10];
+extern int boat_capacity;
 bool Robot::action()
 {
     //LOG("rbt[%d] status = %d,target =(%d,%d)\n", id, status, target.x, target.y);
@@ -210,7 +212,12 @@ bool Robot::action()
             {
                 assert(status == HAVE_GOOD);
                 printf("pull %d\n", id);
-                
+                robotpull70[id]++;
+                if(robotpull70[id]==boat_capacity)
+                {
+                    //LOGERR("robot%d pull %d good at time %d\n",id,boat_capacity, Time);
+                    robotpull70[id]=0;
+                }
                 LOGLOC("pull %d\n", id);
                 Berths[target_id].pullGood();
             }

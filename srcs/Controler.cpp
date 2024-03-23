@@ -12,15 +12,15 @@
 #define ARG2 5
 #define MIN_ARG 20
 extern int Time;
-const int para4 = 1;
-const int para5 = 0;
+const int para4 = 2;
+const int para5 = 1;
 vector<vector<Controler>> ctrls(CTRL_NUM, vector<Controler>(CTRL_NUM));
 
 int evalprio(int x, int y)
 {
     // LOGERR("x=%d, y=%d\n",x,y);
     // assert(0);
-    //return max(x * para4, y * para5);
+    // return max(x * para4, y * para5);
 
     return x * para4 + y * para5;
 }
@@ -276,7 +276,6 @@ void redistribution1()
                     temp[i * CTRL_NUM + j].push_back(it);
                 }
             }
-            
         }
     }
     for (int i = 0; i < CTRL_NUM; i++)
@@ -287,6 +286,7 @@ void redistribution1()
             for (auto it : temp[i * CTRL_NUM + j])
             {
                 ctrls[i][j].brhs.push_back(it);
+                it->ctrl_id=Location(i,j);
             }
         }
     }
@@ -301,31 +301,35 @@ void redistribution1()
             {
                 switch (it->id)
                 {
-                case 0: case 4:
+                case 0:
+                case 4:
                     tempr[0].push_back(it);
-                    it->bth_id=0;
+                    it->bth_id = 0;
                     break;
-                case 7: case 9:
+                case 7:
+                case 9:
                     tempr[0].push_back(it);
-                    it->bth_id=2;
+                    it->bth_id = 2;
                     break;
-                case 1: case 2:
+                case 1:
+                case 2:
                     tempr[1].push_back(it);
-                    it->bth_id=1;
+                    it->bth_id = 1;
                     break;
-                case 5: case 6:
+                case 5:
+                case 6:
                     tempr[2].push_back(it);
-                    it->bth_id=6;
+                    it->bth_id = 6;
                     break;
-                case 3: case 8:
+                case 3:
+                case 8:
                     tempr[3].push_back(it);
-                    it->bth_id=9;
+                    it->bth_id = 9;
                     break;
                 default:
                     break;
                 }
             }
-
         }
     }
 
@@ -337,7 +341,7 @@ void redistribution1()
             for (auto it : tempr[i * CTRL_NUM + j])
             {
                 ctrls[i][j].rbts.push_back(it);
-                it->ctrl_id=Location(i,j);
+                it->ctrl_id = Location(i, j);
             }
 
             LOGERR("ctrls[%d][%d] has robots %d berth %d\n", i, j, ctrls[i][j].rbts.size(), ctrls[i][j].brhs.size());
@@ -352,7 +356,7 @@ void redistribution1()
             }
         }
     }
-    //assert(0);
+    // assert(0);
 }
 
 void redistribution2()
@@ -380,6 +384,7 @@ void redistribution2()
             for (auto it : temp[i * CTRL_NUM + j])
             {
                 ctrls[i][j].brhs.push_back(it);
+                it->ctrl_id=Location(i,j);
             }
         }
     }
@@ -394,31 +399,35 @@ void redistribution2()
             {
                 switch (it->id)
                 {
-                case 0: case 1: case 2: case 3:
+                case 0:
+                case 2:
+                case 3:
+                case 5:
                     tempr[1].push_back(it);
-                    it->bth_id=0;
+                    it->bth_id = 0;
                     break;
-                case 5: case 6:
+                case 6:
                     tempr[1].push_back(it);
-                    it->bth_id=2;
+                    it->bth_id = 2;
                     break;
                 case 7:
+                case 1:
                     tempr[2].push_back(it);
-                    it->bth_id=7;
+                    it->bth_id = 7;
                     break;
                 case 9:
                     tempr[3].push_back(it);
-                    it->bth_id=9;
+                    it->bth_id = 9;
                     break;
-                case 4: case 8:
+                case 4:
+                case 8:
                     tempr[3].push_back(it);
-                    it->bth_id=6;
+                    it->bth_id = 6;
                     break;
                 default:
                     break;
                 }
             }
-
         }
     }
 
@@ -430,7 +439,7 @@ void redistribution2()
             for (auto it : tempr[i * CTRL_NUM + j])
             {
                 ctrls[i][j].rbts.push_back(it);
-                it->ctrl_id=Location(i,j);
+                it->ctrl_id = Location(i, j);
             }
 
             LOGERR("ctrls[%d][%d] has robots %d berth %d\n", i, j, ctrls[i][j].rbts.size(), ctrls[i][j].brhs.size());
@@ -445,7 +454,7 @@ void redistribution2()
             }
         }
     }
-    //assert(0);
+    // assert(0);
 }
 
 void redistribution3()
@@ -1190,4 +1199,56 @@ void redistribution()
         }
     }
     // assert(0);
+}
+
+void robot_redistribute(int berth_ID)
+{
+    
+    Location loc = Berths[berth_ID].ctrl_id;
+    Controler &ctrl = ctrls[loc.x][loc.y];
+    //LOGERR("the berth %d in ctrl[%d][%d]\n",berth_ID,loc.x,loc.y);
+
+    int min = 100000;
+    Controler *ctr = nullptr;
+    int bid = 0;
+    for (int i = 0; i < CTRL_NUM; i++)
+    {
+        for (int j = 0; j < CTRL_NUM; j++)
+        {
+            for (auto it : ctrls[i][j].brhs)
+            {
+                int prio=it->evalWeight() + Berths[berth_ID].loc.disTO(it->loc) * 2;
+                if (prio < min)
+                {
+                    min = prio;
+                    ctr = &ctrls[i][j];
+                    bid = it->ID;
+                }
+            }
+        }
+    }
+    //LOGERR("want to the berth %d\n",bid);
+    if (bid == berth_ID)
+    {
+        return;
+    }
+    for (auto it = ctrl.rbts.begin(); it != ctrl.rbts.end();)
+    {
+        //LOGERR("(*it)->bth_id=%d, compare to%d\n",(*it)->bth_id,berth_ID);
+        if ((*it)->bth_id == berth_ID)
+        {
+            //LOGERR("robot%d change berth goal from %d to %d\n", (*it)->id, (*it)->bth_id, bid);
+            (*it)->bth_id = bid;
+            (*it)->ctrl_id = ctr->id;
+            ctr->rbts.push_back((*it));
+            it = ctrl.rbts.erase(it);
+        }
+        else
+        {
+            ++it;
+        }
+        //LOGERR("1\n");
+    }
+    //LOGERR("conu\n");
+    LOGERR("now the berth %d are quit to berth %d at %d\n",berth_ID,bid,Time);
 }

@@ -18,6 +18,7 @@ class Robot
     friend void redistribution2();
     friend void redistribution3();
     friend void redistribution();
+    friend void robot_redistribute(int berth_ID);
     Location loc;
     ROBOT_STATUS status;
     Location target;

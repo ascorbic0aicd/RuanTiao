@@ -12,6 +12,7 @@ class Berth
     friend void redistribution2();
     friend void redistribution3();
     friend void redistribution();
+    friend void robot_redistribute(int berth_ID);
 private:
     Location loc;
     int transport_time;
@@ -20,6 +21,7 @@ private:
     int have_boat;
     int ID;
     int priority;
+    Location ctrl_id;
     int evalWeight() const;
 
 public:

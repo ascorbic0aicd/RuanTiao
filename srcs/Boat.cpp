@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <cstdio>
+#include "Controler.h"
 #include <cassert>
 using namespace std;
 int boat_capacity = -1;
@@ -84,12 +85,14 @@ void Boat::move()
         
         assert(target < BERTH_NUM && target >= 0);
         printf("ship %d %d\n", ID, target);
+        
         Berths[target].have_boat = true;
-        LOG("ship %d %d at frame %d\n", ID, target, Time);
+        LOG("boat %d from %d go to %d with capcity%d at frame %d\n", ID, berth_ID, target,capacity, Time);
         arrive_time = Time + Berths[target].getTransport_time();
     }
     status = TRANSMIT;
 }
+extern int Barrier_num;
 void Boat::action()
 {
     int num = -1;
@@ -111,11 +114,17 @@ void Boat::action()
     case IDIE:
         num = Berths[berth_ID].transportGood();
         capacity += num;
+
         if (capacity + num > boat_capacity || Time + Berths[berth_ID].transport_time > 14999)
         {
+            if(Time + 3 * Berths[berth_ID].transport_time > 14999)
+            {
+                robot_redistribute(berth_ID);
+            }
             assert(Time!=10452);
             target = -1;
             status = READY;
+            LOGERR("boat %d from %d(has good %d) go to %d with capcity %d at frame %d,its transtime=%d\n", ID, berth_ID,Berths[berth_ID].capacity, target,capacity, Time,Berths[berth_ID].transport_time);
             move();
         }
         return;

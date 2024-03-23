@@ -16,10 +16,12 @@ char ch[230][230];
 int Barrier_num = 0;
 int lowest;
 
+int robotpull70[10];
+
 void Init()
 {
     // init the map
-    srand(time(0));
+    //srand(time(0));
     // init the ctrl
 
     for (int i = 0; i < CTRL_NUM; i++)
@@ -84,12 +86,12 @@ void Init()
     if (Barrier_num == 0)
     {
         redistribution1();
-        lowest = 170;
+        lowest = 175;
     }
     else if (Barrier_num == 10152)
     {
         redistribution2();
-        lowest = 130;
+        lowest = 135;
     }
     else
     {
