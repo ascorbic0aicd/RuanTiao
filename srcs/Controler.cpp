@@ -20,7 +20,7 @@ int evalprio(int x, int y)
 {
     // LOGERR("x=%d, y=%d\n",x,y);
     // assert(0);
-    return max(x,y);
+    return max(x*para4, y*para5);
 
     //return x * para4 + y * para5;
 }

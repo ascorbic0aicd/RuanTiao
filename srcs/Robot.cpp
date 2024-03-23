@@ -85,7 +85,12 @@ bool Robot::findTarget() // will set_target
     }
     else
     {
-        comeBack();
+        if (paths.empty())
+        {
+            comeBack();
+        }
+        
+        
     }
     return succ;
 }
@@ -98,7 +103,12 @@ void Robot::arrive()
         bool succ = findTarget();
         if (!succ)
         {
-            comeBack();
+            if (paths.empty())
+            {
+                comeBack();
+            }
+            
+            
             status = JOGGING;
         }
     }
@@ -220,7 +230,7 @@ bool Robot::action()
         {
             status = MOVING;
         }
-        if (target == loc)
+        if (paths.empty())
         {
             comeBack();
         }
@@ -237,7 +247,7 @@ bool Robot::action()
             if (!succ)
             {
                 missing_num[bth_id]++;
-                if (missing_num[bth_id] == 3)
+                if (missing_num[bth_id] == 5)
                 {
                     black_list.push_back(bth_id);
                 }
@@ -252,6 +262,11 @@ bool Robot::action()
         }
         else
         {
+            if (paths.empty())
+            {
+                comeBack();
+            }
+            
             move();
             cd--;
         }
