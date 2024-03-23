@@ -20,9 +20,9 @@ int evalprio(int x, int y)
 {
     // LOGERR("x=%d, y=%d\n",x,y);
     // assert(0);
-    return max(x * para4, y * para5);
+    //return max(x * para4, y * para5);
 
-    // return x * para4 + y * para5;
+    return x * para4 + y * para5;
 }
 
 void Controler::init(int x, int y) // 1
@@ -257,7 +257,7 @@ void checkCTRL()
 
 void redistribution1()
 {
-    int b1 = 0, b2 = 1, b3 = 6, b4 = 5, b5 = 8;
+    int b1 = 0, b2 = 1, b3 = 2, b4 = 6, b5 = 8;
     choose_bid.push_back(b1);
     choose_bid.push_back(b2);
     choose_bid.push_back(b3);

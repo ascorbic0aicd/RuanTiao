@@ -73,6 +73,7 @@ void Init()
         assert(maps[a.x][a.y].getType()==PORT);
         LOG("transport_time = %d, loading_speed = %d\n", transport_time, loading_speed);
     }
+    //assert(0);
     scanf("%d", &boat_capacity);
     LOG("capacity = %d\n", boat_capacity);
 
@@ -92,7 +93,7 @@ void Init()
     }
     
     initBoat();
-
++
     printf("OK\n");
     fflush(stdout);
 }

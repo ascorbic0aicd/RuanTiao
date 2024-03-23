@@ -11,7 +11,8 @@ const int c2=2;
 const int c3=1000;
 void Berth::init(int x, int y, int transport_time, int loading_speed, int ID)
 {
-    LOG("init berth at(%d,%d)\n",x,y);
+    LOGERR("init berth %d at(%d,%d)\n",ID,x,y);
+    
     loc = Location(x,y);
     this->transport_time = transport_time;
     this->loading_speed = loading_speed;
