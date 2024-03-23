@@ -13,17 +13,16 @@
 #define MIN_ARG 20
 extern int Time;
 const int para4 = 2;
-const int para5 = 10;
+const int para5 = 1;
 vector<vector<Controler>> ctrls(CTRL_NUM, vector<Controler>(CTRL_NUM));
 
-int evalprio(int x,int y)
+int evalprio(int x, int y)
 {
-    //LOGERR("x=%d, y=%d\n",x,y);
-    //assert(0);
-    //return max(x,y);
+    // LOGERR("x=%d, y=%d\n",x,y);
+    // assert(0);
+    return max(x,y);
 
-    return x * para4 + y * para5;
-    
+    //return x * para4 + y * para5;
 }
 
 void Controler::init(int x, int y) // 1
@@ -79,7 +78,6 @@ void Controler::addBerth(Berth *berth) // 3
     // berth_num++;
 }
 
-
 void redistribution()
 {
     int noberth = 0, oneberth = 0, manyberth = 0;
@@ -89,13 +87,13 @@ void redistribution()
     {
         for (int j = 0; j < CTRL_NUM; j++)
         {
-            int dx = i * (200 / CTRL_NUM) + 200 / CTRL_NUM / 4;
-            int dy = j * (200 / CTRL_NUM) + 200 / CTRL_NUM / 4;
+            int dx = i * (200 / CTRL_NUM) + 200 / CTRL_NUM / 3;
+            int dy = j * (200 / CTRL_NUM) + 200 / CTRL_NUM / 3;
             int cx, cy;
             do
             {
-                cx = rand() % (200 / CTRL_NUM / 2);
-                cy = rand() % (200 / CTRL_NUM / 2);
+                cx = rand() % (200 / CTRL_NUM / 3);
+                cy = rand() % (200 / CTRL_NUM / 3);
                 // LOG("maps[%d][%d]\n",dx+cx,dy+cy);
                 assert(dx + cx >= 1 && dx + cx <= 200 && dy + cy >= 1 && dy + cy <= 200);
             } while (maps[dx + cx][dy + cy].getType() == BARRIER || maps[dx + cx][dy + cy].getType() == SEA);
@@ -132,7 +130,7 @@ void redistribution()
                 {
                     path.clear();
                     LOG("randcenter[%d]=(%d,%d),type=%d\n", i * CTRL_NUM + j, randcenter[i * CTRL_NUM + j].x, randcenter[i * CTRL_NUM + j].y, maps[randcenter[i * CTRL_NUM + j].x][randcenter[i * CTRL_NUM + j].y].getType());
-                    Location temploc=b->loc;
+                    Location temploc = b->loc;
                     assert(b->inArea(b->loc));
                     while (!randcenter[i * CTRL_NUM + j].findPath(randcenter[i * CTRL_NUM + j], temploc, path, b->ID, false))
                     {
@@ -152,18 +150,17 @@ void redistribution()
                     }
 
                     int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
-                    LOGERR("prio=%d,b->evalWeight()=%d * para4=%d, path.size() * boat_capacity / 2=%d *para5= %d\n", prio,b->evalWeight(), path.size() * boat_capacity / 2, b->evalWeight()*para4, path.size() * boat_capacity / 2 * para5);
-                    //assert(0);
+                    LOGERR("id:%d,prio=%d,b->evalWeight()=%d * para4=%d, path.size() * boat_capacity / 2=%d *para5= %d\n", b->ID, prio, b->evalWeight(), b->evalWeight() * para4, path.size() * boat_capacity / 2, path.size() * boat_capacity / 2 * para5);
+                    // assert(0);
                     if (prio < min)
                     {
-                        min = b->priority;
+                        min = prio;
                         ptr = b;
-                        
                     }
                 }
                 if (ptr != nullptr)
                 {
-                    LOGERR("choose berth %d\n",ptr->ID);
+                    LOGERR("choose berth %d\n", ptr->ID);
                     choose_bid.push_back(ptr->ID);
                     LOG("choose berth %d\n", ptr->ID);
                     temp[i * CTRL_NUM + j].push_back(ptr);
@@ -186,112 +183,144 @@ void redistribution()
     // LOG("noberth+oneberth+manyberth=%d\n",noberth+oneberth+manyberth);
 
     Controler *ctr = nullptr;
-    LOG("nullctrl num=%d\n", nullctrl.size());
-    for (auto it : nullctrl)
+    // LOG("nullctrl num=%d\n", nullctrl.size());
+    // for (auto it : nullctrl)
+    // {
+    //     Controler &null_ctrl = ctrls[it.first][it.second];
+    //     vector<Controler *> nei = {null_ctrl.left, null_ctrl.right};
+    //     ptr = nullptr;
+    //     min = 1000000000;
+    //     path.clear();
+    //     for (auto ne : nei)
+    //     {
+    //         if (!ne->brhs.empty())
+    //         {
+    //             LOG("there is b\n");
+    //             for (auto b : ne->brhs)
+    //             {
+    //                 LOG("randcenter[%d]=(%d,%d)\n", it.first * CTRL_NUM + it.second, randcenter[it.first * CTRL_NUM + it.second].x, randcenter[it.first * CTRL_NUM + it.second].y);
+    //                 Location temploc=b->loc;
+    //                 if (randcenter[it.first * CTRL_NUM + it.second].findPath(randcenter[it.first * CTRL_NUM + it.second], temploc, path, b->ID, false))
+    //                 {
+    //                     // LOG("path.size()=%d\n",path.size());
+    //                     int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
+    //                     LOGERR("id:%d,prio=%d,b->evalWeight()=%d * para4=%d, path.size() * boat_capacity / 2=%d *para5= %d\n", b->ID, prio ,b->evalWeight(), b->evalWeight()*para4, path.size() * boat_capacity / 2, path.size() * boat_capacity / 2 * para5);
+    //                     if (prio < min)
+    //                     {
+    //                         min = prio;
+    //                         ptr = b;
+    //                         ctr = ne;
+
+    //                     }
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     if (ptr != nullptr)
+    //     {
+    //         LOGERR("choose near berth %d\n",ptr->ID);
+    //         choose_bid.push_back(ptr->ID);
+    //         LOG("choose berth %d\n", ptr->ID);
+    //         temp[it.first * CTRL_NUM + it.second].push_back(ptr);
+
+    //         auto goal = find(ctr->brhs.begin(), ctr->brhs.end(), ptr);
+    //         if (goal != null_ctrl.left->brhs.end())
+    //         {
+    //             ctr->brhs.erase(goal);
+    //         }
+    //         else
+    //         {
+    //             assert(0);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         assert(0);
+    //     }
+    // }
+
+    LOG("choose_bid.size=%d\n", choose_bid.size());
+    assert(5 - choose_bid.size() == noberth + 1);
+
+    for (int k = 0; k < noberth + 1; k++)
     {
-        Controler &null_ctrl = ctrls[it.first][it.second];
-        vector<Controler *> nei = {null_ctrl.left, null_ctrl.right};
         ptr = nullptr;
+        ctr = nullptr;
         min = 1000000000;
         path.clear();
-        for (auto ne : nei)
-        {
-            if (!ne->brhs.empty())
-            {
-                LOG("there is b\n");
-                for (auto b : ne->brhs)
-                {
-                    LOG("randcenter[%d]=(%d,%d)\n", it.first * CTRL_NUM + it.second, randcenter[it.first * CTRL_NUM + it.second].x, randcenter[it.first * CTRL_NUM + it.second].y);
-                    Location temploc=b->loc;
-                    if (randcenter[it.first * CTRL_NUM + it.second].findPath(randcenter[it.first * CTRL_NUM + it.second], temploc, path, b->ID, false))
-                    {
-                        // LOG("path.size()=%d\n",path.size());
-                        int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
-                        LOGERR("prio=%d,b->evalWeight()=%d * para4=%d, path.size() * boat_capacity / 2=%d *para5= %d\n",prio, b->evalWeight(), path.size() * boat_capacity / 2, b->evalWeight()*para4, path.size() * boat_capacity / 2 * para5);
-                        if (prio < min)
-                        {
-                            min = b->priority;
-                            ptr = b;
-                            ctr = ne;
+        pair<int, int> cloc;
 
+        for (int i = 0; i < CTRL_NUM; i++)
+        {
+            for (int j = 0; j < CTRL_NUM; j++)
+            {
+                if (!ctrls[i][j].brhs.empty())
+                {
+                    for (auto b : ctrls[i][j].brhs)
+                    {
+                        Location temploc = b->loc;
+                        if (randcenter[i * CTRL_NUM + j].findPath(randcenter[i * CTRL_NUM + j], temploc, path, b->ID, false))
+                        {
+                            int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
+                            if (prio < min)
+                            {
+                                min = prio;
+                                ptr = b;
+                                ctr = &ctrls[i][j];
+                                cloc = pair<int, int>(i, j);
+                            }
                         }
                     }
                 }
             }
         }
+
         if (ptr != nullptr)
         {
-            LOGERR("choose near berth %d\n",ptr->ID);
             choose_bid.push_back(ptr->ID);
             LOG("choose berth %d\n", ptr->ID);
-            temp[it.first * CTRL_NUM + it.second].push_back(ptr);
 
-            auto goal = find(ctr->brhs.begin(), ctr->brhs.end(), ptr);
-            if (goal != null_ctrl.left->brhs.end())
-            {
-                ctr->brhs.erase(goal);
-            }
-            else
-            {
-                assert(0);
-            }
+            temp[cloc.first * CTRL_NUM + cloc.second].push_back(ptr);
+            auto it = find(ctr->brhs.begin(), ctr->brhs.end(), ptr);
+            ctr->brhs.erase(it);
         }
         else
         {
             assert(0);
         }
     }
-
-    LOG("choose_bid.size=%d\n", choose_bid.size());
-    assert(choose_bid.size() == 4);
-
-    ptr = nullptr;
-    ctr = nullptr;
-    min = 1000000000;
-    path.clear();
     for (int i = 0; i < CTRL_NUM; i++)
     {
         for (int j = 0; j < CTRL_NUM; j++)
         {
-            if (!ctrls[i][j].brhs.empty())
+            ctrls[i][j].brhs.clear();
+            for(auto it: temp[i * CTRL_NUM + j])
             {
-                for (auto b : ctrls[i][j].brhs)
-                {
-                    Location temploc=b->loc;
-                    if (randcenter[i * CTRL_NUM + j].findPath(randcenter[i * CTRL_NUM + j], temploc, path, b->ID, false))
-                    {
-                        int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
-                        if (prio < min)
-                        {
-                            min = b->priority;
-                            ptr = b;
-                            ctr = &ctrls[i][j];
-                        }
-                    }
-                }
+                ctrls[i][j].brhs.push_back(it);
             }
         }
     }
-    if (ptr != nullptr)
-    {
-        choose_bid.push_back(ptr->ID);
-        LOG("choose berth %d\n", ptr->ID);
+    
+    // if (ptr != nullptr)
+    // {
+    //     choose_bid.push_back(ptr->ID);
+    //     LOG("choose berth %d\n", ptr->ID);
 
-        for (int i = 0; i < CTRL_NUM; i++)
-        {
-            for (int j = 0; j < CTRL_NUM; j++)
-            {
-                ctrls[i][j].brhs.clear();
-                assert(temp[i * CTRL_NUM + j].size() == 1);
-                ctrls[i][j].brhs.push_back(temp[i * CTRL_NUM + j].front());
-            }
-        }
-        ctr->brhs.push_back(ptr);
-    }
-    else
-    {
-        assert(0);
-    }
+    //     for (int i = 0; i < CTRL_NUM; i++)
+    //     {
+    //         for (int j = 0; j < CTRL_NUM; j++)
+    //         {
+    //             ctrls[i][j].brhs.clear();
+    //             assert(temp[i * CTRL_NUM + j].size() == 1);
+    //             ctrls[i][j].brhs.push_back(temp[i * CTRL_NUM + j].front());
+    //         }
+    //     }
+    //     ctr->brhs.push_back(ptr);
+    // }
+    // else
+    // {
+    //     assert(0);
+    // }
 
     // robot
     list<Robot *> tempr[4];
@@ -303,13 +332,13 @@ void redistribution()
         for (int j = 0; j < CTRL_NUM; j++)
         {
             LOG("i=%d,j=%d berth num=%d, robot num=%d\n", i, j, ctrls[i][j].brhs.size(), ctrls[i][j].rbts.size());
-            if (ctrls[i][j].brhs.size() * 2 <= ctrls[i][j].rbts.size())
+            if (!ctrls[i][j].brhs.empty() && ctrls[i][j].brhs.size() * 2 <= ctrls[i][j].rbts.size())
             {
                 int k = ctrls[i][j].brhs.size() * 2;
                 for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
                 {
                     assert(!ctrls[i][j].brhs.empty());
-                    Location temploc=ctrls[i][j].brhs.front()->loc;
+                    Location temploc = ctrls[i][j].brhs.front()->loc;
                     if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
                     {
                         tempr[i * CTRL_NUM + j].push_back(*it);
@@ -340,7 +369,7 @@ void redistribution()
 
                 for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
                 {
-                    Location temploc= ctrls[i][j].brhs.front()->loc;
+                    Location temploc = ctrls[i][j].brhs.front()->loc;
                     if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
                     {
                         tempr[i * CTRL_NUM + j].push_back(*it);
@@ -381,7 +410,7 @@ void redistribution()
             {
                 for (auto it = ne->rbts.begin(); it != ne->rbts.end() && k > 0;)
                 {
-                    Location temploc= ctrl.brhs.front()->loc;
+                    Location temploc = ctrl.brhs.front()->loc;
                     if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrl.brhs.front()->ID, false))
                     {
                         tempr[l.first.first * CTRL_NUM + l.first.second].push_back(*it);
@@ -412,30 +441,29 @@ void redistribution()
         for (int j = 0; j < CTRL_NUM; j++)
         {
             // assert(ctrls[i][j].rbts.empty());
-            //ctrls[i][j].rbts.clear();
-            int k=0;
+            // ctrls[i][j].rbts.clear();
+            int k = 0;
             for (auto it : tempr[i * CTRL_NUM + j])
             {
                 ctrls[i][j].rbts.push_back(it);
                 it->ctrl_id = Location(i, j);
 
-                it->bth_id=ctrls[i][j].brhs[k / 2]->getID();
+                it->bth_id = ctrls[i][j].brhs[k / 2]->getID();
                 k++;
             }
             LOGERR("ctrls[%d][%d] has robots %d berth %d\n", i, j, ctrls[i][j].rbts.size(), ctrls[i][j].brhs.size());
             for (auto r : ctrls[i][j].rbts)
             {
                 LOGERR("robots id=%d to berth %d\n", r->id, r->bth_id);
-            
             }
             for (auto b : ctrls[i][j].brhs)
             {
                 LOGERR("berth id=%d\n", b->ID);
-                assert(Berths[b->ID].loc==b->loc);
+                assert(Berths[b->ID].loc == b->loc);
             }
         }
     }
-    //assert(0);
+    // assert(0);
 }
 
 void Controler::action()
