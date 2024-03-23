@@ -14,6 +14,7 @@ int money, Time;
 char ch[230][230];
 
 int Barrier_num = 0;
+int lowest;
 
 void Init()
 {
@@ -43,14 +44,14 @@ void Init()
                 LOGLOC("robots[%d] init done \n", rbt_idx);
                 rbt_idx++;
             }
-            if((CellType)ch[i][j] == BARRIER)
+            if ((CellType)ch[i][j] == BARRIER)
             {
                 Barrier_num++;
             }
         }
     }
-    LOGERR("Barrier_num=%d\n",Barrier_num);
-    //assert(0);
+    LOGERR("Barrier_num=%d\n", Barrier_num);
+    // assert(0);
     for (int i = 0; i < ROBOT_NUM; ++i)
     {
         if (robots[i] == nullptr)
@@ -69,32 +70,35 @@ void Init()
         scanf("%d%d%d%d", &x, &y, &transport_time, &loading_speed);
 
         Berths[id].init(x + 1, y + 1, transport_time, loading_speed, id);
-        Location a(Berths[id].getLoc().x,Berths[id].getLoc().y);
-        assert(maps[a.x][a.y].getType()==PORT);
+        Location a(Berths[id].getLoc().x, Berths[id].getLoc().y);
+        assert(maps[a.x][a.y].getType() == PORT);
         LOG("transport_time = %d, loading_speed = %d\n", transport_time, loading_speed);
     }
-    //assert(0);
+    // assert(0);
     scanf("%d", &boat_capacity);
     LOG("capacity = %d\n", boat_capacity);
 
     char okk[100];
     scanf("%s", okk);
-    //adjust();
-    if(Barrier_num==0)
+    // adjust();
+    if (Barrier_num == 0)
     {
         redistribution1();
+        lowest = 170;
     }
-    else if(Barrier_num == 10152)
+    else if (Barrier_num == 10152)
     {
         redistribution2();
+        lowest = 130;
     }
-    else{
+    else
+    {
         redistribution3();
+        lowest = 170;
     }
-    
+
     initBoat();
-+
-    printf("OK\n");
+    +printf("OK\n");
     fflush(stdout);
 }
 
@@ -108,9 +112,9 @@ int Input()
     {
         int x, y, val;
         scanf("%d%d%d", &x, &y, &val);
-        if (val > 170)
+        if (val > lowest)
         {
-            //assert(0);
+            // assert(0);
             LOGLOC("add good(%d,%d)val = %d start!\n", x, y, val);
             addGood(val, Time, x + 1, y + 1);
             LOGLOC("add good(%d,%d)val = %d end!\n", x, y, val);

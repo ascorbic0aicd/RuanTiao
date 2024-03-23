@@ -12,8 +12,8 @@
 #define ARG2 5
 #define MIN_ARG 20
 extern int Time;
-const int para4 = 2;
-const int para5 = 1;
+const int para4 = 1;
+const int para5 = 0;
 vector<vector<Controler>> ctrls(CTRL_NUM, vector<Controler>(CTRL_NUM));
 
 int evalprio(int x, int y)
@@ -257,7 +257,7 @@ void checkCTRL()
 
 void redistribution1()
 {
-    int b1 = 0, b2 = 1, b3 = 2, b4 = 6, b5 = 8;
+    int b1 = 0, b2 = 1, b3 = 2, b4 = 6, b5 = 9;
     choose_bid.push_back(b1);
     choose_bid.push_back(b2);
     choose_bid.push_back(b3);
@@ -276,6 +276,13 @@ void redistribution1()
                     temp[i * CTRL_NUM + j].push_back(it);
                 }
             }
+            
+        }
+    }
+    for (int i = 0; i < CTRL_NUM; i++)
+    {
+        for (int j = 0; j < CTRL_NUM; j++)
+        {
             ctrls[i][j].brhs.clear();
             for (auto it : temp[i * CTRL_NUM + j])
             {
@@ -286,115 +293,39 @@ void redistribution1()
 
     // robot
     list<Robot *> tempr[4];
-    list<pair<pair<int, int>, int>> need;
-    PATH<PATH_TYPE> path;
-    path.clear();
     for (int i = 0; i < CTRL_NUM; i++)
     {
         for (int j = 0; j < CTRL_NUM; j++)
         {
-            LOG("i=%d,j=%d berth num=%d, robot num=%d\n", i, j, ctrls[i][j].brhs.size(), ctrls[i][j].rbts.size());
-            if (!ctrls[i][j].brhs.empty() && ctrls[i][j].brhs.size() * 2 <= ctrls[i][j].rbts.size())
+            for (auto it : ctrls[i][j].rbts)
             {
-                int k = ctrls[i][j].brhs.size() * 2;
-                for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
+                switch (it->id)
                 {
-                    assert(!ctrls[i][j].brhs.empty());
-                    Location temploc = ctrls[i][j].brhs.front()->loc;
-                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
-                    {
-                        tempr[i * CTRL_NUM + j].push_back(*it);
-                        it = ctrls[i][j].rbts.erase(it);
-                        LOG("add robot\n");
-                        k--;
-                    }
-                    else
-                    {
-                        ++it;
-                        k--;
-                    }
-                    if (k == 0)
-                    {
-                        break;
-                    }
-                }
-                if (k > 0)
-                { // there are/is robot can't go to the berth;
-                    assert(0);
+                case 0: case 4:
+                    tempr[0].push_back(it);
+                    it->bth_id=0;
+                    break;
+                case 7: case 9:
+                    tempr[0].push_back(it);
+                    it->bth_id=2;
+                    break;
+                case 1: case 2:
+                    tempr[1].push_back(it);
+                    it->bth_id=1;
+                    break;
+                case 5: case 6:
+                    tempr[2].push_back(it);
+                    it->bth_id=6;
+                    break;
+                case 3: case 8:
+                    tempr[3].push_back(it);
+                    it->bth_id=9;
+                    break;
+                default:
+                    break;
                 }
             }
-            else if (ctrls[i][j].brhs.size() * 2 > ctrls[i][j].rbts.size())
-            {
-                int k = ctrls[i][j].rbts.size();
-                int p = ctrls[i][j].brhs.size() * 2 - ctrls[i][j].rbts.size();
-                LOG("k=%d,p=%d\n", k, p);
 
-                for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
-                {
-                    Location temploc = ctrls[i][j].brhs.front()->loc;
-                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
-                    {
-                        tempr[i * CTRL_NUM + j].push_back(*it);
-                        LOG("add robot\n");
-                        it = ctrls[i][j].rbts.erase(it);
-                        k--;
-                    }
-                    else
-                    {
-                        ++it;
-                        k--;
-                    }
-                    if (k == 0)
-                    {
-                        break;
-                    }
-                }
-                if (k > 0)
-                {
-                    assert(0);
-                }
-                need.push_back(pair<pair<int, int>, int>(pair<int, int>(i, j), p));
-                LOG("need i=%d,j=%d\n", i, j);
-            }
-        }
-    }
-    LOG("num of need=%d\n", need.size());
-
-    for (auto l : need)
-    {
-        Controler &ctrl = ctrls[l.first.first][l.first.second];
-        LOG("ctrls[%d][%d]\n", l.first.first, l.first.second);
-        vector<Controler *> nei = {ctrl.up, ctrl.left, ctrl.left->up};
-        int k = l.second;
-        for (auto ne : nei)
-        {
-            if (!ne->rbts.empty())
-            {
-                for (auto it = ne->rbts.begin(); it != ne->rbts.end() && k > 0;)
-                {
-                    Location temploc = ctrl.brhs.front()->loc;
-                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrl.brhs.front()->ID, false))
-                    {
-                        tempr[l.first.first * CTRL_NUM + l.first.second].push_back(*it);
-                        it = ne->rbts.erase(it);
-                        LOG("add robot\n");
-                        k--;
-                    }
-                    else
-                    {
-                        ++it;
-                        k--;
-                    }
-                }
-            }
-            if (k == 0)
-            {
-                break;
-            }
-        }
-        if (k > 0)
-        {
-            // assert(0);
         }
     }
 
@@ -402,17 +333,13 @@ void redistribution1()
     {
         for (int j = 0; j < CTRL_NUM; j++)
         {
-            // assert(ctrls[i][j].rbts.empty());
-            // ctrls[i][j].rbts.clear();
-            int k = 0;
+            ctrls[i][j].rbts.clear();
             for (auto it : tempr[i * CTRL_NUM + j])
             {
                 ctrls[i][j].rbts.push_back(it);
-                it->ctrl_id = Location(i, j);
-
-                it->bth_id = ctrls[i][j].brhs[k / 2]->getID();
-                k++;
+                it->ctrl_id=Location(i,j);
             }
+
             LOGERR("ctrls[%d][%d] has robots %d berth %d\n", i, j, ctrls[i][j].rbts.size(), ctrls[i][j].brhs.size());
             for (auto r : ctrls[i][j].rbts)
             {
@@ -425,7 +352,7 @@ void redistribution1()
             }
         }
     }
-    // assert(0);
+    //assert(0);
 }
 
 void redistribution2()
@@ -456,117 +383,42 @@ void redistribution2()
             }
         }
     }
+
     // robot
     list<Robot *> tempr[4];
-    list<pair<pair<int, int>, int>> need;
-    PATH<PATH_TYPE> path;
-    path.clear();
     for (int i = 0; i < CTRL_NUM; i++)
     {
         for (int j = 0; j < CTRL_NUM; j++)
         {
-            LOG("i=%d,j=%d berth num=%d, robot num=%d\n", i, j, ctrls[i][j].brhs.size(), ctrls[i][j].rbts.size());
-            if (!ctrls[i][j].brhs.empty() && ctrls[i][j].brhs.size() * 2 <= ctrls[i][j].rbts.size())
+            for (auto it : ctrls[i][j].rbts)
             {
-                int k = ctrls[i][j].brhs.size() * 2;
-                for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
+                switch (it->id)
                 {
-                    assert(!ctrls[i][j].brhs.empty());
-                    Location temploc = ctrls[i][j].brhs.front()->loc;
-                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
-                    {
-                        tempr[i * CTRL_NUM + j].push_back(*it);
-                        it = ctrls[i][j].rbts.erase(it);
-                        LOG("add robot\n");
-                        k--;
-                    }
-                    else
-                    {
-                        ++it;
-                        k--;
-                    }
-                    if (k == 0)
-                    {
-                        break;
-                    }
-                }
-                if (k > 0)
-                { // there are/is robot can't go to the berth;
-                    assert(0);
+                case 0: case 1: case 2: case 3:
+                    tempr[1].push_back(it);
+                    it->bth_id=0;
+                    break;
+                case 5: case 6:
+                    tempr[1].push_back(it);
+                    it->bth_id=2;
+                    break;
+                case 7:
+                    tempr[2].push_back(it);
+                    it->bth_id=7;
+                    break;
+                case 9:
+                    tempr[3].push_back(it);
+                    it->bth_id=9;
+                    break;
+                case 4: case 8:
+                    tempr[3].push_back(it);
+                    it->bth_id=6;
+                    break;
+                default:
+                    break;
                 }
             }
-            else if (ctrls[i][j].brhs.size() * 2 > ctrls[i][j].rbts.size())
-            {
-                int k = ctrls[i][j].rbts.size();
-                int p = ctrls[i][j].brhs.size() * 2 - ctrls[i][j].rbts.size();
-                LOG("k=%d,p=%d\n", k, p);
 
-                for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
-                {
-                    Location temploc = ctrls[i][j].brhs.front()->loc;
-                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
-                    {
-                        tempr[i * CTRL_NUM + j].push_back(*it);
-                        LOG("add robot\n");
-                        it = ctrls[i][j].rbts.erase(it);
-                        k--;
-                    }
-                    else
-                    {
-                        ++it;
-                        k--;
-                    }
-                    if (k == 0)
-                    {
-                        break;
-                    }
-                }
-                if (k > 0)
-                {
-                    assert(0);
-                }
-                need.push_back(pair<pair<int, int>, int>(pair<int, int>(i, j), p));
-                LOG("need i=%d,j=%d\n", i, j);
-            }
-        }
-    }
-    LOG("num of need=%d\n", need.size());
-
-    for (auto l : need)
-    {
-        Controler &ctrl = ctrls[l.first.first][l.first.second];
-        LOG("ctrls[%d][%d]\n", l.first.first, l.first.second);
-        vector<Controler *> nei = {ctrl.up, ctrl.left, ctrl.left->up};
-        int k = l.second;
-        for (auto ne : nei)
-        {
-            if (!ne->rbts.empty())
-            {
-                for (auto it = ne->rbts.begin(); it != ne->rbts.end() && k > 0;)
-                {
-                    Location temploc = ctrl.brhs.front()->loc;
-                    if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrl.brhs.front()->ID, false))
-                    {
-                        tempr[l.first.first * CTRL_NUM + l.first.second].push_back(*it);
-                        it = ne->rbts.erase(it);
-                        LOG("add robot\n");
-                        k--;
-                    }
-                    else
-                    {
-                        ++it;
-                        k--;
-                    }
-                }
-            }
-            if (k == 0)
-            {
-                break;
-            }
-        }
-        if (k > 0)
-        {
-            // assert(0);
         }
     }
 
@@ -574,17 +426,13 @@ void redistribution2()
     {
         for (int j = 0; j < CTRL_NUM; j++)
         {
-            // assert(ctrls[i][j].rbts.empty());
-            // ctrls[i][j].rbts.clear();
-            int k = 0;
+            ctrls[i][j].rbts.clear();
             for (auto it : tempr[i * CTRL_NUM + j])
             {
                 ctrls[i][j].rbts.push_back(it);
-                it->ctrl_id = Location(i, j);
-
-                it->bth_id = ctrls[i][j].brhs[k / 2]->getID();
-                k++;
+                it->ctrl_id=Location(i,j);
             }
+
             LOGERR("ctrls[%d][%d] has robots %d berth %d\n", i, j, ctrls[i][j].rbts.size(), ctrls[i][j].brhs.size());
             for (auto r : ctrls[i][j].rbts)
             {
@@ -597,7 +445,7 @@ void redistribution2()
             }
         }
     }
-    // assert(0);
+    //assert(0);
 }
 
 void redistribution3()
