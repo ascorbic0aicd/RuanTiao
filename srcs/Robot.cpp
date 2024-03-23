@@ -105,7 +105,8 @@ void Robot::arrive()
     else
     {
         // int bth_id = maps[loc.x][loc.y].nearest_Berth(black_list);
-        int bth_id = ctrls[ctrl_id.x][ctrl_id.y].brhs.front()->getID();
+
+        //int bth_id = ctrls[ctrl_id.x][ctrl_id.y].brhs.front()->getID();
         
         bool succ = to(Berths[bth_id].getLoc(), true);
 
@@ -231,7 +232,7 @@ bool Robot::action()
         if (cd == 0)
         {
             // int bth_id = maps[loc.x][loc.y].nearest_Berth(black_list);
-            int bth_id = ctrls[ctrl_id.x][ctrl_id.y].brhs.front()->getID();
+            //int bth_id = ctrls[ctrl_id.x][ctrl_id.y].brhs.front()->getID();
             bool succ = to(Berths[bth_id].getLoc(), true);
             if (!succ)
             {

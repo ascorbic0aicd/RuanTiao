@@ -7,7 +7,7 @@ vector<Berth>Berths(BERTH_NUM);
 vector<int> choose_bid;
 extern int boat_capacity;
 const int c1=1;
-const int c2=1;
+const int c2=2;
 const int c3=1000;
 void Berth::init(int x, int y, int transport_time, int loading_speed, int ID)
 {

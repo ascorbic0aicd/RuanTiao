@@ -12,6 +12,9 @@ using namespace std;
 extern int boat_capacity;
 int money, Time;
 char ch[230][230];
+
+int robotspeed[20];
+
 void Init()
 {
     // init the map

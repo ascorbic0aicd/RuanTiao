@@ -26,9 +26,10 @@ class Robot
     PATH<PATH_TYPE> old_ways;
     int target_id;
     Location ctrl_id;
+    int bth_id;
 public:
     const int id;
-    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), target(-1, -1),next_step(-1,-1),target_id(-1),missing_num(10,0),ctrl_id(0,0)
+    Robot(int id, int x, int y) : id(id), loc(x, y), status(FREE), target(-1, -1),next_step(-1,-1),target_id(-1),missing_num(10,0),ctrl_id(0,0),bth_id(0)
     {
         Location temp_ctrl_id = findCTRL(loc);
         ctrls[temp_ctrl_id.x][temp_ctrl_id.y].addRobot(this);

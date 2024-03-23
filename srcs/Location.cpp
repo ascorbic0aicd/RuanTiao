@@ -8,7 +8,7 @@
 #include <list>
 extern int Time;
 extern char ch[230][230];
-#define TOO_MANY 500
+#define TOO_MANY 700
 bool can_goback = true;
 // 10847
 struct Waypoint

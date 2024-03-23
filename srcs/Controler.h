@@ -21,7 +21,7 @@ private:
     friend void checkCTRL();
     friend void redistribution();
 public:
-    list<Berth *> brhs;
+    vector<Berth *> brhs;
     Controler() : id(-1, -1){};
     Controler *left, *right, *up, *down;
     bool findTraget(Robot *rbt, Location &loc);

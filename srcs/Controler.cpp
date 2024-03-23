@@ -12,14 +12,18 @@
 #define ARG2 5
 #define MIN_ARG 20
 extern int Time;
-const int para4 = 100;
-const int para5 = 2;
+const int para4 = 2;
+const int para5 = 10;
 vector<vector<Controler>> ctrls(CTRL_NUM, vector<Controler>(CTRL_NUM));
 
 int evalprio(int x,int y)
 {
+    //LOGERR("x=%d, y=%d\n",x,y);
+    //assert(0);
     //return max(x,y);
+
     return x * para4 + y * para5;
+    
 }
 
 void Controler::init(int x, int y) // 1
@@ -58,7 +62,7 @@ void Controler::addRobot(Robot *rbt) // 2
     {
         if (rbt->id == i->id)
         {
-            LOGERR("add rbt[%d] twice at frame in(%d,%d)?\n", rbt->id, id.x, id.y);
+            LOG("add rbt[%d] twice at frame in(%d,%d)?\n", rbt->id, id.x, id.y);
             assert(0);
         }
     }
@@ -113,7 +117,7 @@ void redistribution()
             {
                 oneberth++;
                 choose_bid.push_back(ctrls[i][j].brhs.front()->ID);
-                LOG("choose berth %d\n", ptr->ID);
+                LOGERR("choose berth %d\n", ptr->ID);
                 temp[i * CTRL_NUM + j].push_back(ctrls[i][j].brhs.front());
                 ctrls[i][j].brhs.clear();
                 LOG("one\n");
@@ -148,15 +152,18 @@ void redistribution()
                     }
 
                     int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
-                    LOG("b->evalWeight()=%d, path.size() * boat_capacity / 2=%d, path.size()=%d,boat_capacity=%d\n", b->evalWeight(), path.size() * boat_capacity / 2, path.size(), boat_capacity);
+                    LOGERR("prio=%d,b->evalWeight()=%d * para4=%d, path.size() * boat_capacity / 2=%d *para5= %d\n", prio,b->evalWeight(), path.size() * boat_capacity / 2, b->evalWeight()*para4, path.size() * boat_capacity / 2 * para5);
+                    //assert(0);
                     if (prio < min)
                     {
                         min = b->priority;
                         ptr = b;
+                        
                     }
                 }
                 if (ptr != nullptr)
                 {
+                    LOGERR("choose berth %d\n",ptr->ID);
                     choose_bid.push_back(ptr->ID);
                     LOG("choose berth %d\n", ptr->ID);
                     temp[i * CTRL_NUM + j].push_back(ptr);
@@ -200,12 +207,13 @@ void redistribution()
                     {
                         // LOG("path.size()=%d\n",path.size());
                         int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
-                        LOG("b->evalWeight()=%d, path.size() * boat_capacity / 2=%d, path.size()=%d,boat_capacity=%d\n", b->evalWeight(), path.size() * boat_capacity / 2, path.size(), boat_capacity);
+                        LOGERR("prio=%d,b->evalWeight()=%d * para4=%d, path.size() * boat_capacity / 2=%d *para5= %d\n",prio, b->evalWeight(), path.size() * boat_capacity / 2, b->evalWeight()*para4, path.size() * boat_capacity / 2 * para5);
                         if (prio < min)
                         {
                             min = b->priority;
                             ptr = b;
                             ctr = ne;
+
                         }
                     }
                 }
@@ -213,6 +221,7 @@ void redistribution()
         }
         if (ptr != nullptr)
         {
+            LOGERR("choose near berth %d\n",ptr->ID);
             choose_bid.push_back(ptr->ID);
             LOG("choose berth %d\n", ptr->ID);
             temp[it.first * CTRL_NUM + it.second].push_back(ptr);
@@ -293,7 +302,7 @@ void redistribution()
     {
         for (int j = 0; j < CTRL_NUM; j++)
         {
-            LOGERR("i=%d,j=%d berth num=%d, robot num=%d\n", i, j, ctrls[i][j].brhs.size(), ctrls[i][j].rbts.size());
+            LOG("i=%d,j=%d berth num=%d, robot num=%d\n", i, j, ctrls[i][j].brhs.size(), ctrls[i][j].rbts.size());
             if (ctrls[i][j].brhs.size() * 2 <= ctrls[i][j].rbts.size())
             {
                 int k = ctrls[i][j].brhs.size() * 2;
@@ -305,7 +314,7 @@ void redistribution()
                     {
                         tempr[i * CTRL_NUM + j].push_back(*it);
                         it = ctrls[i][j].rbts.erase(it);
-                        LOGERR("add robot\n");
+                        LOG("add robot\n");
                         k--;
                     }
                     else
@@ -327,7 +336,7 @@ void redistribution()
             {
                 int k = ctrls[i][j].rbts.size();
                 int p = ctrls[i][j].brhs.size() * 2 - ctrls[i][j].rbts.size();
-                LOGERR("k=%d,p=%d\n", k, p);
+                LOG("k=%d,p=%d\n", k, p);
 
                 for (auto it = ctrls[i][j].rbts.begin(); it != ctrls[i][j].rbts.end();)
                 {
@@ -335,7 +344,7 @@ void redistribution()
                     if ((*it)->loc.findPath((*it)->loc, temploc, path, ctrls[i][j].brhs.front()->ID, false))
                     {
                         tempr[i * CTRL_NUM + j].push_back(*it);
-                        LOGERR("add robot\n");
+                        LOG("add robot\n");
                         it = ctrls[i][j].rbts.erase(it);
                         k--;
                     }
@@ -354,16 +363,16 @@ void redistribution()
                     assert(0);
                 }
                 need.push_back(pair<pair<int, int>, int>(pair<int, int>(i, j), p));
-                LOGERR("need i=%d,j=%d\n", i, j);
+                LOG("need i=%d,j=%d\n", i, j);
             }
         }
     }
-    LOGERR("num of need=%d\n", need.size());
+    LOG("num of need=%d\n", need.size());
 
     for (auto l : need)
     {
         Controler &ctrl = ctrls[l.first.first][l.first.second];
-        LOGERR("ctrls[%d][%d]\n", l.first.first, l.first.second);
+        LOG("ctrls[%d][%d]\n", l.first.first, l.first.second);
         vector<Controler *> nei = {ctrl.up, ctrl.left, ctrl.left->up};
         int k = l.second;
         for (auto ne : nei)
@@ -377,7 +386,7 @@ void redistribution()
                     {
                         tempr[l.first.first * CTRL_NUM + l.first.second].push_back(*it);
                         it = ne->rbts.erase(it);
-                        LOGERR("add robot\n");
+                        LOG("add robot\n");
                         k--;
                     }
                     else
@@ -404,15 +413,19 @@ void redistribution()
         {
             // assert(ctrls[i][j].rbts.empty());
             //ctrls[i][j].rbts.clear();
+            int k=0;
             for (auto it : tempr[i * CTRL_NUM + j])
             {
                 ctrls[i][j].rbts.push_back(it);
                 it->ctrl_id = Location(i, j);
+
+                it->bth_id=ctrls[i][j].brhs[k / 2]->getID();
+                k++;
             }
             LOGERR("ctrls[%d][%d] has robots %d berth %d\n", i, j, ctrls[i][j].rbts.size(), ctrls[i][j].brhs.size());
             for (auto r : ctrls[i][j].rbts)
             {
-                LOGERR("robots id=%d\n", r->id);
+                LOGERR("robots id=%d to berth %d\n", r->id, r->bth_id);
             
             }
             for (auto b : ctrls[i][j].brhs)
@@ -498,7 +511,7 @@ void Controler::removeRobot(Robot *rbt)
     if (it == rbts.end())
     {
 
-        LOGERR("can't find the rbt[%d] at(%d,%d) in ctrl[%d][%d]\n", rbt->id, loc.x, loc.y, temp.x, temp.y);
+        LOG("can't find the rbt[%d] at(%d,%d) in ctrl[%d][%d]\n", rbt->id, loc.x, loc.y, temp.x, temp.y);
         for (int i = 0; i < CTRL_NUM; i++)
         {
             for (int j = 0; j < CTRL_NUM; j++)
@@ -507,10 +520,10 @@ void Controler::removeRobot(Robot *rbt)
                 {
                     if (it->id == rbt->id)
                     {
-                        LOGERR("rbt[%d] at ctrl[%d][%d]?\n\n", rbt->id, i, j);
+                        LOG("rbt[%d] at ctrl[%d][%d]?\n\n", rbt->id, i, j);
                         for (auto itt : ctrls[i][j].rbts)
                         {
-                            LOGERR("rbt[%d] at ctrl[%d][%d]?\n", itt->id, i, j);
+                            LOG("rbt[%d] at ctrl[%d][%d]?\n", itt->id, i, j);
                         }
                         assert(0);
                     }
@@ -549,14 +562,14 @@ bool Controler::removeGood(Location &loc)
             {
                 if (gd->loc == loc)
                 {
-                    LOGERR("good (%d,%d) at ctrl[%d][%d]?\n", loc.x, loc.y, i, j);
+                    LOG("good (%d,%d) at ctrl[%d][%d]?\n", loc.x, loc.y, i, j);
                 }
             }
         }
     }
 
-    LOGERR("can't find the  at(%d,%d) in ctrl[%d][%d]\n", loc.x, loc.y, temp.x, temp.y);
-    // LOGERR("no good at (%d,%d)?\n", loc.x, loc.y);
+    LOG("can't find the  at(%d,%d) in ctrl[%d][%d]\n", loc.x, loc.y, temp.x, temp.y);
+    // LOG("no good at (%d,%d)?\n", loc.x, loc.y);
     return false;
 }
 bool Controler::removeGood(Good *good)
@@ -585,7 +598,7 @@ void checkCTRL()
                 LOGLOC("Find rbt[%d] at(%d,%d)\n", rbt->id, i, j);
                 if (flags[rbt->id])
                 {
-                    LOGERR("rbt[%d] find twice\n", rbt->id);
+                    LOG("rbt[%d] find twice\n", rbt->id);
                     assert(0);
                 }
                 flags[rbt->id] = true;
@@ -596,7 +609,7 @@ void checkCTRL()
     {
         if (!flags[i])
         {
-            LOGERR("can't find rbt[%d]\n", i);
+            LOG("can't find rbt[%d]\n", i);
             assert(0);
         }
     }
