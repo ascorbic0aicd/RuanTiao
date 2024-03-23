@@ -400,18 +400,20 @@ void redistribution2()
                 switch (it->id)
                 {
                 case 0:
+                case 1:
                 case 2:
                 case 3:
-                case 5:
                     tempr[1].push_back(it);
                     it->bth_id = 0;
                     break;
                 case 6:
+                case 5:
+                case 4:
                     tempr[1].push_back(it);
                     it->bth_id = 2;
                     break;
                 case 7:
-                case 1:
+                
                     tempr[2].push_back(it);
                     it->bth_id = 7;
                     break;
@@ -419,8 +421,9 @@ void redistribution2()
                     tempr[3].push_back(it);
                     it->bth_id = 9;
                     break;
-                case 4:
+                
                 case 8:
+                
                     tempr[3].push_back(it);
                     it->bth_id = 6;
                     break;
@@ -1217,7 +1220,7 @@ void robot_redistribute(int berth_ID)
         {
             for (auto it : ctrls[i][j].brhs)
             {
-                int prio=it->evalWeight() + Berths[berth_ID].loc.disTO(it->loc) * 2;
+                int prio=it->evalWeight() + Berths[berth_ID].loc.disTO(it->loc);
                 if (prio < min)
                 {
                     min = prio;
