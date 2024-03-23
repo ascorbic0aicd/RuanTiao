@@ -13,7 +13,7 @@
 #define MIN_ARG 20
 extern int Time;
 const int para4 = 2;
-const int para5 = 10;
+const int para5 = 1;
 vector<vector<Controler>> ctrls(CTRL_NUM, vector<Controler>(CTRL_NUM));
 
 int evalprio(int x,int y)
@@ -156,7 +156,7 @@ void redistribution()
                     //assert(0);
                     if (prio < min)
                     {
-                        min = b->priority;
+                        min = prio;
                         ptr = b;
                         
                     }
@@ -210,7 +210,7 @@ void redistribution()
                         LOGERR("prio=%d,b->evalWeight()=%d * para4=%d, path.size() * boat_capacity / 2=%d *para5= %d\n",prio, b->evalWeight(), path.size() * boat_capacity / 2, b->evalWeight()*para4, path.size() * boat_capacity / 2 * para5);
                         if (prio < min)
                         {
-                            min = b->priority;
+                            min = prio;
                             ptr = b;
                             ctr = ne;
 
@@ -263,7 +263,7 @@ void redistribution()
                         int prio = evalprio(b->evalWeight(), (int)path.size() * boat_capacity / 2);
                         if (prio < min)
                         {
-                            min = b->priority;
+                            min = prio;
                             ptr = b;
                             ctr = &ctrls[i][j];
                         }
