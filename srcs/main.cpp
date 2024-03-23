@@ -96,7 +96,7 @@ void Init()
     else
     {
         redistribution3();
-        lowest = 170;
+        lowest = 165;
     }
 
     initBoat();
