@@ -8,6 +8,9 @@ class Berth
 {
     friend Boat;
     friend void adjust();
+    friend void redistribution1();
+    friend void redistribution2();
+    friend void redistribution3();
     friend void redistribution();
 private:
     Location loc;

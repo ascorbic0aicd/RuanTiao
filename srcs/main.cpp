@@ -13,7 +13,7 @@ extern int boat_capacity;
 int money, Time;
 char ch[230][230];
 
-int robotspeed[20];
+int Barrier_num = 0;
 
 void Init()
 {
@@ -43,8 +43,14 @@ void Init()
                 LOGLOC("robots[%d] init done \n", rbt_idx);
                 rbt_idx++;
             }
+            if((CellType)ch[i][j] == BARRIER)
+            {
+                Barrier_num++;
+            }
         }
     }
+    LOGERR("Barrier_num=%d\n",Barrier_num);
+    //assert(0);
     for (int i = 0; i < ROBOT_NUM; ++i)
     {
         if (robots[i] == nullptr)
@@ -73,7 +79,18 @@ void Init()
     char okk[100];
     scanf("%s", okk);
     //adjust();
-    redistribution();
+    if(Barrier_num==0)
+    {
+        redistribution1();
+    }
+    else if(Barrier_num == 10152)
+    {
+        redistribution2();
+    }
+    else{
+        redistribution3();
+    }
+    
     initBoat();
 
     printf("OK\n");

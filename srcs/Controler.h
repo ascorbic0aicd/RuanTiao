@@ -19,6 +19,9 @@ private:
     int free_rbts_nums = 0;
     int berth_num=0;
     friend void checkCTRL();
+    friend void redistribution1();
+    friend void redistribution2();
+    friend void redistribution3();
     friend void redistribution();
 public:
     vector<Berth *> brhs;
@@ -38,6 +41,9 @@ public:
 };
 extern vector<vector<Controler>> ctrls;
 void checkCTRL();
+void redistribution1();
+void redistribution2();
+void redistribution3();
 void redistribution();
 inline Location findCTRL(const Location &loc)
 {

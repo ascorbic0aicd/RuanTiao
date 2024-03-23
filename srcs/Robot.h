@@ -14,6 +14,9 @@ extern int rbt_idx;
 class Robot
 {
     friend bool check(Robot rbt, Location &next);
+    friend void redistribution1();
+    friend void redistribution2();
+    friend void redistribution3();
     friend void redistribution();
     Location loc;
     ROBOT_STATUS status;
